@@ -179,6 +179,6 @@ class _MapPageState extends State<MapPage> with AutomaticKeepAliveClientMixin<Ma
                   }
                 },
               ),
-        bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 2));
+        bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 1));
   }
 }

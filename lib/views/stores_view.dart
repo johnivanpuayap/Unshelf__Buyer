@@ -1,6 +1,9 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:unshelf_buyer/views/map_view.dart';
 import 'package:unshelf_buyer/views/store_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:unshelf_buyer/widgets/custom_navigation_bar.dart';
@@ -47,7 +50,6 @@ class StoresView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 30),
-
                 // Store Details
                 Expanded(
                   child: Column(
@@ -94,6 +96,30 @@ class StoresView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        actions: <Widget>[
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (BuildContext context, Animation<double> animation1, Animation<double> animation2) {
+                    return MapPage();
+                  },
+                  transitionsBuilder: (_, animation, __, child) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: child,
+                    );
+                  },
+                  transitionDuration: const Duration(milliseconds: 200),
+                ),
+              );
+            },
+            icon: Icon(Icons.place, color: const Color.fromARGB(255, 75, 223, 122)),
+            label: Text("Near Me"),
+          ),
+          const SizedBox(width: 10)
+        ],
         backgroundColor: const Color(0xFF0AB68B),
         elevation: 0,
         toolbarHeight: 65,
@@ -137,6 +163,7 @@ class StoresView extends StatelessWidget {
                   }
 
                   final storeData = storeSnapshot.data!;
+
                   return _buildStoreCard(storeData.data() as Map<String, dynamic>, storeId, context);
                 },
               );

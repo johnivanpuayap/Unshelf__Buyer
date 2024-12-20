@@ -109,6 +109,11 @@ class _ProductPageState extends State<ProductPage> {
           var productData = snapshot.data!.data() as Map<String, dynamic>;
           final batchData = _selectedBatch?.data() as Map<String, dynamic>?;
 
+          double tempPrice = batchData?['price'].toDouble() ?? productData?['price'].toDouble();
+          double finalPrice = tempPrice * (1 - batchData?['discount'] / 100).toDouble();
+          batchData?['price'] = finalPrice;
+          productData?['price'] = finalPrice;
+
           return Column(
             children: [
               Stack(

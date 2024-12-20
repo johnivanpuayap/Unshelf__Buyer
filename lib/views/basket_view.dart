@@ -91,7 +91,6 @@ class _BasketViewState extends State<BasketView> {
         final bundles = {for (var doc in bundleSnapshots.docs) doc.id: doc.data()};
         for (var bundleDoc in bundleSnapshots.docs) {
           final bundleData = bundleDoc.data();
-          debugPrint("bundle ${bundleData.toString()}");
           final bundleId = bundleDoc.id;
           final quantity = quantities[bundleId] ?? 0;
 
@@ -102,7 +101,6 @@ class _BasketViewState extends State<BasketView> {
           final storeData = stores[sellerId];
 
           if (storeData != null) {
-            debugPrint("here..");
             if (!groupedItems.containsKey(sellerId)) {
               groupedItems[sellerId] = [];
             }

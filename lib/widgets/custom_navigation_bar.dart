@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:unshelf_buyer/views/home_view.dart';
+import 'package:unshelf_buyer/views/notifications_view.dart';
+import 'package:unshelf_buyer/views/order_tracking_view.dart';
 import 'package:unshelf_buyer/views/stores_view.dart';
 import 'package:unshelf_buyer/views/map_view.dart';
 import 'package:unshelf_buyer/views/profile_view.dart';
@@ -23,12 +25,13 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
   final List<Widget> _pages = [
     HomeView(),
     const StoresView(),
-    MapPage(),
+    const OrderTrackingView(),
+    const NotificationsView(),
     ProfileView(),
   ];
 
-  final List<String> _labels = ['Home', 'Stores', 'Near Me', 'My Stuff'];
-  final List<IconData> _icons = [Icons.home, Icons.store, Icons.location_on, Icons.person];
+  final List<String> _labels = ['Home', 'Stores', 'Orders', 'Notifications', 'My Stuff'];
+  final List<IconData> _icons = [Icons.home, Icons.store, Icons.event_note, Icons.notifications, Icons.person];
 
   @override
   void initState() {

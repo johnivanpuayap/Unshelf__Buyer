@@ -9,6 +9,7 @@ import 'package:unshelf_buyer/views/login_view.dart';
 import 'package:unshelf_buyer/views/order_tracking_view.dart';
 import 'package:unshelf_buyer/views/profile_favorites_view.dart';
 import 'package:unshelf_buyer/views/profile_following_view.dart';
+import 'package:unshelf_buyer/views/report_view.dart';
 import 'package:unshelf_buyer/widgets/custom_navigation_bar.dart';
 
 void main() async {
@@ -105,7 +106,15 @@ class ProfileView extends StatelessWidget {
                       child: ListView(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         children: [
-                          const SizedBox(height: 20),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          const Divider(),
+                          const Text(
+                            "General",
+                            style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                          ),
+                          const Divider(),
                           _buildProfileOption(context, Icons.list_alt, "Edit Profile", 1),
                           const Divider(),
                           _buildProfileOption(context, Icons.track_changes, "Orders", 2),
@@ -113,6 +122,14 @@ class ProfileView extends StatelessWidget {
                           _buildProfileOption(context, Icons.favorite, "Favorites", 3),
                           const Divider(),
                           _buildProfileOption(context, Icons.store, "Following", 4),
+                          const Divider(),
+
+                          const Text(
+                            "Account & Security",
+                            style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                          ),
+                          const Divider(),
+                          _buildProfileOption(context, Icons.report_problem, "Report", 5),
                           const Divider(),
                           // const Divider(),
                           // _buildProfileOption(context, Icons.history, "Order History", 5),
@@ -123,7 +140,7 @@ class ProfileView extends StatelessWidget {
                           // _buildProfileOption(context, Icons.help, "Help Center", 9),
                           // _buildProfileOption(context, Icons.settings, "Settings", 10),
                           // _buildProfileOption(context, Icons.support, "Customer Support", 11),
-                          _buildProfileOption(context, Icons.logout, "Log Out", 5),
+                          _buildProfileOption(context, Icons.logout, "Log Out", 6),
                         ],
                       ),
                     ),
@@ -133,7 +150,7 @@ class ProfileView extends StatelessWidget {
             );
           },
         ),
-        bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 3));
+        bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 4));
   }
 
   Widget _buildProfileOption(BuildContext context, IconData icon, String title, num index) {
@@ -179,6 +196,15 @@ class ProfileView extends StatelessWidget {
             );
             break;
           case 5:
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ReportFormView(),
+                fullscreenDialog: true,
+              ),
+            );
+            break;
+          case 6:
             FirebaseAuth.instance.signOut();
             Navigator.pushReplacement(
               context,

@@ -225,7 +225,6 @@ class OrderViewModel extends ChangeNotifier {
           }
           await FirebaseFirestore.instance.collection('batches').doc(batchId).update({'stock': newStock});
         } else {
-          debugPrint("IT'S A BUNDLE!!!");
           DocumentSnapshot bundleSnapshot = await FirebaseFirestore.instance.collection('bundles').doc(batchId).get();
           if (bundleSnapshot.exists) {
             Map<String, dynamic>? bundleData = bundleSnapshot.data() as Map<String, dynamic>?;

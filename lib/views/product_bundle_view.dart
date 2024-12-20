@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:unshelf_buyer/views/basket_view.dart';
 import 'package:unshelf_buyer/views/product_view.dart';
@@ -109,7 +108,7 @@ class _BundleViewState extends State<BundleView> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '\u{20B1}${bundleData?['price']?.toStringAsFixed(2)}',
+                            '\u{20B1}${(bundleData?['price'].toDouble() * (1 - bundleData?['discount'] / 100).toDouble())?.toStringAsFixed(2)}',
                             style: const TextStyle(fontSize: 20, color: Color(0xFF0AB68B), fontWeight: FontWeight.bold),
                           ),
                           Text('Stock: ${bundleData['stock']}', style: TextStyle(fontSize: 20, color: Colors.grey[500])),

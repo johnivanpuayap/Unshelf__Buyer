@@ -64,25 +64,47 @@ class _StoreViewState extends State<StoreView> {
   Future<void> _toggleFollow() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      var tempFollowCount = followerCount;
       var followRef = FirebaseFirestore.instance.collection('users').doc(user.uid).collection('following').doc(widget.storeId);
-      var storeDoc = await FirebaseFirestore.instance.collection('stores').doc(widget.storeId).get();
       var storeRef = FirebaseFirestore.instance.collection('stores').doc(widget.storeId);
 
-      if (isFollowing) {
-        tempFollowCount -= 1;
-        await followRef.delete();
-        await storeRef.update({'follower_count': tempFollowCount});
-      } else {
-        await followRef.set({'added_at': FieldValue.serverTimestamp()});
-        await storeRef.update({'follower_count': tempFollowCount});
-      }
-
+      // Update UI immediately when button is toggled
       setState(() {
-        isFollowing = !isFollowing;
-        followerCount = tempFollowCount;
+        if (isFollowing) {
+          // Decrease follow count optimistically
+          followerCount -= 1;
+        } else {
+          // Increase follow count optimistically
+          followerCount += 1;
+        }
+        isFollowing = !isFollowing; // Toggle the following state
       });
 
+      // Perform Firebase operations afterward
+      try {
+        if (isFollowing) {
+          await followRef.set({'added_at': FieldValue.serverTimestamp()});
+        } else {
+          await followRef.delete();
+        }
+        await storeRef.update({'follower_count': followerCount});
+      } catch (e) {
+        // If Firebase operations fail, revert the UI changes
+        setState(() {
+          if (isFollowing) {
+            followerCount -= 1;
+          } else {
+            followerCount += 1;
+          }
+          isFollowing = !isFollowing; // Revert following state
+        });
+
+        // Optionally show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update follow status. Please try again.')),
+        );
+      }
+
+      // Show confirmation message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(isFollowing ? 'You are now following the store!' : 'You have stopped following the store.')),
       );

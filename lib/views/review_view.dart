@@ -80,7 +80,23 @@ class _ReviewPageState extends State<ReviewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Leave a Review'),
+        backgroundColor: const Color(0xFF0AB68B),
+        elevation: 0,
+        toolbarHeight: 65,
+        title: const Text(
+          "Leave a Review",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 25,
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(4.0),
+          child: Container(
+            color: const Color(0xFF92DE8B),
+            height: 6.0,
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

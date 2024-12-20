@@ -29,8 +29,9 @@ class _HomeViewState extends State<HomeView> {
     // get minimum prices for each product
     for (var batch in batchesSnapshot.docs) {
       Map tempData = (batch.data() as Map);
+      double discount = tempData['discount'].toDouble();
       String tempProductId = tempData['productId'];
-      double tempPrice = tempData['price'].toDouble();
+      double tempPrice = tempData['price'].toDouble() * ((1 - discount / 100).toDouble());
       if (!minPrices.containsKey(tempProductId) || tempPrice < minPrices[tempProductId]!) {
         minPrices[tempProductId] = tempPrice;
       }
@@ -279,7 +280,7 @@ class _HomeViewState extends State<HomeView> {
           ),
           if (isBundle)
             Text(
-              "PHP ${data['price']!.toStringAsFixed(2)}",
+              "PHP ${(data['price']!.toDouble() * (1 - data['discount'] / 100).toDouble()).toStringAsFixed(2)}",
               style: const TextStyle(fontSize: 14.0, color: Colors.grey),
             )
           else

@@ -121,16 +121,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                             const SizedBox(height: 4),
                           ],
                         ),
-                      ), // Heart button (Remove from following)
-                      // IconButton(
-                      //   icon: const Icon(Icons.favorite, color: const Color(0xFF0AB68B)),
-                      //   onPressed: () {
-                      //     _removeFromFollowing(storeId);
-                      //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      //       content: Text('Successfully removed from following list.'),
-                      //     ));
-                      //   },
-                      // ),
+                      ),
                     ],
                   ),
                 ),
