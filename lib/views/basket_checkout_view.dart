@@ -72,8 +72,8 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
   void _calculateTotal() {
     totalRegular = widget.basketItems.fold(
       0.0,
-      (sum, item) =>
-          sum + (item['batchPrice'] as num).toDouble() * (item['quantity'] as int),
+      (acc, item) =>
+          acc + (item['batchPrice'] as num).toDouble() * (item['quantity'] as int),
     );
     totalAmount = totalRegular;
   }
@@ -341,7 +341,7 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
                 ),
                 trailing: Switch(
                   value: usePoints,
-                  activeColor: cs.primary,
+                  activeThumbColor: cs.primary,
                   onChanged: (v) {
                     setState(() => usePoints = v);
                     _updateTotal();
