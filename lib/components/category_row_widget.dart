@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:unshelf_buyer/views/category_view.dart';
@@ -43,7 +44,7 @@ class _CategoryIconsRowState extends State<CategoryIconsRow> {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
-                  color: _pressedIndex == index ? const Color(0xFF0AB68B) : const Color.fromARGB(255, 241, 241, 241),
+                  color: _pressedIndex == index ? AppColors.primaryColor : const Color.fromARGB(255, 241, 241, 241),
                   borderRadius: BorderRadius.circular(20.0),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),

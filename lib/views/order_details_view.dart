@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -48,7 +49,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0AB68B),
+        backgroundColor: AppColors.primaryColor,
         elevation: 0,
         toolbarHeight: 65,
         title: const Text(
@@ -61,7 +62,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
         bottom: PreferredSize(
             preferredSize: const Size.fromHeight(4.0),
             child: Container(
-              color: const Color(0xFF92DE8B),
+              color: AppColors.lightColor,
               height: 6.0,
             )),
       ),
@@ -166,7 +167,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
               //       ),
               //     ), // Heart button (Remove from following)
               //     // IconButton(
-              //     //   icon: const Icon(Icons.favorite, color: const Color(0xFF0AB68B)),
+              //     //   icon: const Icon(Icons.favorite, color: AppColors.primaryColor),
               //     //   onPressed: () {
               //     //     _removeFromFollowing(storeId);
               //     //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -227,7 +228,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0AB68B),
+                            color: AppColors.primaryColor,
                             border: Border.all(
                               color: Colors.black, // Border color
                               width: 1.0, // Border width
@@ -248,7 +249,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: widget.orderDetails['isPaid'] ? const Color(0xFF0AB68B) : Colors.red,
+                            color: widget.orderDetails['isPaid'] ? AppColors.primaryColor : Colors.red,
                             border: Border.all(
                               color: Colors.black, // Border color
                               width: 1.0, // Border width

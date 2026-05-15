@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -85,7 +86,7 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
     final FirebaseAuth _auth = FirebaseAuth.instance;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0AB68B),
+        backgroundColor: AppColors.primaryColor,
         elevation: 0,
         toolbarHeight: 65,
         title: const Text(
@@ -100,7 +101,7 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
           child: Column(
             children: [
               Container(
-                color: Color(0xFF92DE8B),
+                color: AppColors.lightColor,
                 height: 4.0,
               ),
               Container(
@@ -118,7 +119,7 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
                             padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 14.0),
                             margin: const EdgeInsets.only(right: 10.0),
                             decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFF0AB68B) : Colors.grey[300],
+                              color: isSelected ? AppColors.primaryColor : Colors.grey[300],
                               borderRadius: BorderRadius.circular(20.0),
                             ),
                             child: Text(
@@ -261,7 +262,7 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
                                     style: const TextStyle(
                                       fontSize: 18.0,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF0AB68B),
+                                      color: AppColors.primaryColor,
                                     ),
                                   ),
                                   const SizedBox(height: 8.0),
@@ -320,7 +321,7 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
                                       // Container(
                                       //   padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 12.0),
                                       //   decoration: BoxDecoration(
-                                      //     color: isPaid ? const Color(0xFF0AB68B) : Colors.red,
+                                      //     color: isPaid ? AppColors.primaryColor : Colors.red,
                                       //     borderRadius: BorderRadius.circular(12.0),
                                       //   ),
                                       //   child: Text(

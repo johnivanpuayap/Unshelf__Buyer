@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -56,13 +57,13 @@ class MyApp extends StatelessWidget {
         bottomAppBarTheme: const BottomAppBarTheme(color: Colors.white, shadowColor: Colors.grey, elevation: 20),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
           backgroundColor: Colors.white,
-          selectedItemColor: Color(0xFF0AB68B),
+          selectedItemColor: AppColors.primaryColor,
           unselectedItemColor: Colors.grey,
         ),
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0AB68B)),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryColor),
         useMaterial3: true,
         textTheme: GoogleFonts.jostTextTheme(Theme.of(context).textTheme)
-            .apply(displayColor: const Color(0xFF0AB68B), bodyColor: Colors.black),
+            .apply(displayColor: AppColors.primaryColor, bodyColor: Colors.black),
       ),
       debugShowCheckedModeBanner: false,
       home: FirebaseAuth.instance.currentUser != null ? HomeView() : LoginView(),

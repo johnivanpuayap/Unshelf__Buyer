@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -189,7 +190,7 @@ class _BasketViewState extends State<BasketView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0AB68B),
+        backgroundColor: AppColors.primaryColor,
         elevation: 0,
         toolbarHeight: 65,
         title: const Text(
@@ -199,7 +200,7 @@ class _BasketViewState extends State<BasketView> {
         bottom: PreferredSize(
             preferredSize: const Size.fromHeight(4.0),
             child: Container(
-              color: const Color(0xFF92DE8B),
+              color: AppColors.lightColor,
               height: 6.0,
             )),
       ),
@@ -401,7 +402,7 @@ class _BasketViewState extends State<BasketView> {
                       );
                     },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0AB68B),
+                backgroundColor: AppColors.primaryColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),

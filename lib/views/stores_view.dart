@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
@@ -64,7 +65,7 @@ class StoresView extends StatelessWidget {
                   ),
                 ), // Heart button (Remove from following)
                 // IconButton(
-                //   icon: const Icon(Icons.favorite, color: const Color(0xFF0AB68B)),
+                //   icon: const Icon(Icons.favorite, color: AppColors.primaryColor),
                 //   onPressed: () {
                 //     _removeFromFollowing(storeId);
                 //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -120,7 +121,7 @@ class StoresView extends StatelessWidget {
           ),
           const SizedBox(width: 10)
         ],
-        backgroundColor: const Color(0xFF0AB68B),
+        backgroundColor: AppColors.primaryColor,
         elevation: 0,
         toolbarHeight: 65,
         title: const Text(
@@ -130,7 +131,7 @@ class StoresView extends StatelessWidget {
         bottom: PreferredSize(
             preferredSize: const Size.fromHeight(4.0),
             child: Container(
-              color: const Color(0xFF92DE8B),
+              color: AppColors.lightColor,
               height: 6.0,
             )),
       ),

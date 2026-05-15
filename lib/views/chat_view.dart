@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +38,7 @@ class _ChatViewState extends State<ChatView> with AutomaticKeepAliveClientMixin 
     super.build(context);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0AB68B),
+        backgroundColor: AppColors.primaryColor,
         elevation: 0,
         toolbarHeight: 65,
         title: Text(
@@ -47,7 +48,7 @@ class _ChatViewState extends State<ChatView> with AutomaticKeepAliveClientMixin 
         bottom: PreferredSize(
             preferredSize: const Size.fromHeight(4.0),
             child: Container(
-              color: const Color(0xFF92DE8B),
+              color: AppColors.lightColor,
               height: 6.0,
             )),
       ),
@@ -124,7 +125,7 @@ class _ChatViewState extends State<ChatView> with AutomaticKeepAliveClientMixin 
             icon: const Icon(
               Icons.send,
               size: 30,
-              color: Color(0xFF0AB68B),
+              color: AppColors.primaryColor,
             ),
           ),
         ],

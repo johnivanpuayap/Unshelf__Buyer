@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -92,7 +93,7 @@ class ProfileView extends StatelessWidget {
                                     const SizedBox(width: 8),
                                     Text(
                                       "POINTS: ${userData['points']}",
-                                      style: const TextStyle(color: Color(0xFF0AB68B), fontWeight: FontWeight.bold),
+                                      style: const TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold),
                                     ),
                                   ],
                                 ),
@@ -155,7 +156,7 @@ class ProfileView extends StatelessWidget {
 
   Widget _buildProfileOption(BuildContext context, IconData icon, String title, num index) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFF0AB68B)),
+      leading: Icon(icon, color: AppColors.primaryColor),
       title: Text(title),
       onTap: () {
         switch (index) {
