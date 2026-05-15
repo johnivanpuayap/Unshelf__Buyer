@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 130"
+     role="img" aria-labelledby="title desc">
+  <title id="title">Unshelf wordmark</title>
+  <desc id="desc">The Unshelf wordmark set in DM Serif Display, primary-dark green.</desc>
+  <defs>
+    <style>
+      .wordmark-text { fill: #28602F; font-family: 'DM Serif Display', 'Times New Roman', serif; font-size: 120px; font-weight: 400; letter-spacing: -2px; }
+    </style>
+  </defs>
+  <text x="210" y="92" text-anchor="middle" class="wordmark-text">unshelf</text>
+</svg>
