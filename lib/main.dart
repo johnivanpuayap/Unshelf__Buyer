@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' hide ChangeNotifierProvider;
 import 'package:provider/provider.dart';
 import 'package:unshelf_buyer/theme/unshelf_theme.dart';
 import 'package:unshelf_buyer/viewmodels/order_viewmodel.dart';
@@ -34,13 +35,15 @@ void main() async {
   UnshelfTheme.preloadFonts();
 
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => StoreViewModel("2gxma4nHjhcHsOgDDDarlyeEvy12")), //
-        ChangeNotifierProvider(create: (_) => OrderViewModel()), // OrderViewModel Provider
-        // Add more providers here
-      ],
-      child: const MyApp(),
+    ProviderScope(
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => StoreViewModel("2gxma4nHjhcHsOgDDDarlyeEvy12")), //
+          ChangeNotifierProvider(create: (_) => OrderViewModel()), // OrderViewModel Provider
+          // Add more providers here
+        ],
+        child: const MyApp(),
+      ),
     ),
   );
 }
