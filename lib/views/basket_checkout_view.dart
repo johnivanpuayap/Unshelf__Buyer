@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:unshelf_buyer/views/chat_screen.dart';
 import 'package:unshelf_buyer/views/order_placed_view.dart';
 import 'package:unshelf_buyer/viewmodels/order_viewmodel.dart';
-import 'package:unshelf_buyer/widgets/datetime_picker.dart';
+import 'package:unshelf_buyer/components/datetime_picker.dart';
 
 class CheckoutView extends StatefulWidget {
   final List<Map<String, dynamic>> basketItems;

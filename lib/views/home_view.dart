@@ -7,10 +7,10 @@ import 'package:unshelf_buyer/views/basket_view.dart';
 import 'package:unshelf_buyer/views/product_bundle_view.dart';
 import 'package:unshelf_buyer/views/profile_favorites_view.dart';
 import 'package:unshelf_buyer/views/search_view.dart';
-import 'package:unshelf_buyer/widgets/category_row_widget.dart';
+import 'package:unshelf_buyer/components/category_row_widget.dart';
 import 'package:unshelf_buyer/views/chat_screen.dart';
 import 'package:unshelf_buyer/views/product_view.dart';
-import 'package:unshelf_buyer/widgets/custom_navigation_bar.dart';
+import 'package:unshelf_buyer/components/custom_navigation_bar.dart';
 
 class HomeView extends StatefulWidget {
   @override

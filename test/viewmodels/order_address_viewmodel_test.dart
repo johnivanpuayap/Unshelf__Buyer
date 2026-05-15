@@ -10,15 +10,15 @@ class _MockAuthRepository extends Mock implements AuthRepository {}
 class _MockUserRepository extends Mock implements UserRepository {}
 
 void main() {
-  group('OrderAddressViewmodel', () {
+  group('OrderAddressViewModel', () {
     late _MockAuthRepository mockAuth;
     late _MockUserRepository mockUsers;
-    late OrderAddressViewmodel viewModel;
+    late OrderAddressViewModel viewModel;
 
     setUp(() {
       mockAuth = _MockAuthRepository();
       mockUsers = _MockUserRepository();
-      viewModel = OrderAddressViewmodel(authRepository: mockAuth, userRepository: mockUsers);
+      viewModel = OrderAddressViewModel(authRepository: mockAuth, userRepository: mockUsers);
     });
 
     test('default chosenLocation is Cebu City', () {

@@ -11,7 +11,7 @@
 
 //   @override
 //   Widget build(BuildContext context) {
-//     final viewModel = Provider.of<AddressViewmodel>(context);
+//     final viewModel = Provider.of<AddressViewModel>(context);
 
 //     return Scaffold(
 //       appBar: AppBar(

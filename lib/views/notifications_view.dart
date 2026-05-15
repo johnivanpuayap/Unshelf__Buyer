@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:unshelf_buyer/views/product_bundle_view.dart';
 import 'package:unshelf_buyer/views/product_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:unshelf_buyer/widgets/custom_navigation_bar.dart';
+import 'package:unshelf_buyer/components/custom_navigation_bar.dart';
 
 class NotificationsView extends StatelessWidget {
   const NotificationsView({Key? key}) : super(key: key);

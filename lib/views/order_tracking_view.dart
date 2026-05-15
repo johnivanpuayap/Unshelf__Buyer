@@ -7,7 +7,7 @@ import 'package:unshelf_buyer/views/map_view.dart';
 import 'package:unshelf_buyer/views/order_details_view.dart';
 import 'package:unshelf_buyer/views/profile_view.dart';
 import 'package:unshelf_buyer/views/review_view.dart';
-import 'package:unshelf_buyer/widgets/custom_navigation_bar.dart';
+import 'package:unshelf_buyer/components/custom_navigation_bar.dart';
 
 class OrderTrackingView extends StatefulWidget {
   const OrderTrackingView({Key? key}) : super(key: key);

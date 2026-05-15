@@ -3,8 +3,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:unshelf_buyer/data/repositories/auth_repository.dart';
 import 'package:unshelf_buyer/data/repositories/user_repository.dart';
 
-class AddressViewmodel extends ChangeNotifier {
-  AddressViewmodel({
+class AddressViewModel extends ChangeNotifier {
+  AddressViewModel({
     required AuthRepository authRepository,
     required UserRepository userRepository,
   })  : _authRepository = authRepository,

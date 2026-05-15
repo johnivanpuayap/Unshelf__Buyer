@@ -5,12 +5,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:unshelf_buyer/views/edit_profile_view.dart';
 import 'package:unshelf_buyer/views/home_view.dart';
-import 'package:unshelf_buyer/views/login_view.dart';
+import 'package:unshelf_buyer/authentication/views/login_view.dart';
 import 'package:unshelf_buyer/views/order_tracking_view.dart';
 import 'package:unshelf_buyer/views/profile_favorites_view.dart';
 import 'package:unshelf_buyer/views/profile_following_view.dart';
 import 'package:unshelf_buyer/views/report_view.dart';
-import 'package:unshelf_buyer/widgets/custom_navigation_bar.dart';
+import 'package:unshelf_buyer/components/custom_navigation_bar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

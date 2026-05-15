@@ -6,7 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:unshelf_buyer/views/basket_view.dart';
 import 'package:unshelf_buyer/views/product_bundle_view.dart';
-import 'package:unshelf_buyer/widgets/category_row_widget.dart';
+import 'package:unshelf_buyer/components/category_row_widget.dart';
 import 'package:unshelf_buyer/views/chat_screen.dart';
 import 'package:unshelf_buyer/views/map_view.dart';
 import 'package:unshelf_buyer/views/product_view.dart';
