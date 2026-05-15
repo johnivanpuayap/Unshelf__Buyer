@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:unshelf_buyer/authentication/views/login_view.dart';
 
 class RegisterView extends StatefulWidget {
@@ -94,10 +95,12 @@ class _RegisterViewState extends State<RegisterView> {
           key: _formKey,
           child: Column(
             children: <Widget>[
-              Image.network(
-                'https://firebasestorage.googleapis.com/v0/b/unshelf-d4567.appspot.com/o/Unshelf.png?alt=media&token=ea449292-f36d-4dfe-a90a-2bef5c341694',
+              SvgPicture.asset(
+                'assets/images/logos/logo.svg',
                 height: 100,
+                semanticsLabel: 'Unshelf',
               ),
+              const SizedBox(height: 24),
               TextFormField(
                 controller: _sellerNameController,
                 decoration: const InputDecoration(labelText: 'Name'),
