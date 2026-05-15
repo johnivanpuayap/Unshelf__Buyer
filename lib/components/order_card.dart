@@ -148,7 +148,7 @@ class OrderCard extends StatelessWidget {
                     Text(
                       '₱${totalPrice.toStringAsFixed(2)}',
                       style: tt.titleSmall?.copyWith(
-                        fontFamily: 'DMSerifDisplay',
+                        fontFamily: 'DM Serif Display',
                         color: cs.primary,
                       ),
                     ),

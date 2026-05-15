@@ -128,7 +128,7 @@ class BasketRow extends StatelessWidget {
           Text(
             '₱${lineTotal.toStringAsFixed(2)}',
             style: tt.titleMedium?.copyWith(
-              fontFamily: 'DMSerifDisplay',
+              fontFamily: 'DM Serif Display',
               color: cs.primary,
               fontWeight: FontWeight.w400,
             ),
