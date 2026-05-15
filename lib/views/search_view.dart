@@ -1,5 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -27,33 +25,51 @@ class _SearchViewState extends State<SearchView> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
         elevation: 0,
         toolbarHeight: 80,
         title: Container(
           height: 50,
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 5, offset: const Offset(0, 0))],
+            color: cs.surface,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                offset: const Offset(0, 1),
+                blurRadius: 0,
+              ),
+              BoxShadow(
+                color: const Color(0xFF1F2A20).withValues(alpha: 0.06),
+                offset: const Offset(0, 8),
+                blurRadius: 28,
+              ),
+            ],
           ),
           child: Row(
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Icon(Icons.search, color: Colors.grey[600]),
+                child: Icon(Icons.search, color: cs.onSurface.withValues(alpha: 0.6)),
               ),
               Expanded(
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
                     hintText: "Search",
-                    hintStyle: TextStyle(color: Colors.grey[600]),
+                    hintStyle: tt.bodyMedium?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
                     border: InputBorder.none,
+                    // Remove default InputDecorationTheme padding/fill for this inline field
+                    filled: false,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
                   ),
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: tt.bodyMedium?.copyWith(color: cs.onSurface),
                   onChanged: (query) {
                     _performSearch(query);
                   },
@@ -66,7 +82,7 @@ class _SearchViewState extends State<SearchView> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4.0),
           child: Container(
-            color: AppColors.lightColor,
+            color: cs.primary.withValues(alpha: 0.6),
             height: 4.0,
           ),
         ),
@@ -76,6 +92,9 @@ class _SearchViewState extends State<SearchView> {
   }
 
   Widget _buildProductCard(Map<String, dynamic> data, String productId, bool isBundle, BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Column(
       children: [
         GestureDetector(
@@ -92,7 +111,7 @@ class _SearchViewState extends State<SearchView> {
             );
           },
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20),
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -101,11 +120,22 @@ class _SearchViewState extends State<SearchView> {
                   width: 90,
                   height: 90,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 5, offset: const Offset(0, 3))],
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.02),
+                        offset: const Offset(0, 1),
+                        blurRadius: 0,
+                      ),
+                      BoxShadow(
+                        color: const Color(0xFF1F2A20).withValues(alpha: 0.06),
+                        offset: const Offset(0, 8),
+                        blurRadius: 28,
+                      ),
+                    ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(14),
                     child: CachedNetworkImage(
                       imageUrl: data['mainImageUrl'],
                       fit: BoxFit.cover,
@@ -114,7 +144,7 @@ class _SearchViewState extends State<SearchView> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 30),
+                const SizedBox(width: 24),
 
                 // Text Details
                 Expanded(
@@ -123,17 +153,17 @@ class _SearchViewState extends State<SearchView> {
                     children: [
                       Text(
                         data['name'], // Product Name
-                        style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.black),
+                        style: tt.titleSmall?.copyWith(color: cs.onSurface),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         "PHP ${minPrices[productId]?.toStringAsFixed(2) ?? 'N/A'}", // Price
-                        style: const TextStyle(fontSize: 14.0, color: Colors.black),
+                        style: tt.bodyMedium?.copyWith(color: cs.onSurface),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         data['store_name'] ?? "Unknown Store", // Store Name
-                        style: const TextStyle(fontSize: 12.0, color: Colors.grey),
+                        style: tt.bodySmall?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
                       ),
                     ],
                   ),
@@ -142,14 +172,12 @@ class _SearchViewState extends State<SearchView> {
             ),
           ),
         ),
-        const SizedBox(
-          height: 15,
-        ),
+        const SizedBox(height: 16),
         // Divider between product cards
         Divider(
-          thickness: 0.2,
+          thickness: 0.5,
           height: 1,
-          color: Colors.grey[600],
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
         ),
       ],
     );
@@ -178,7 +206,7 @@ class _SearchViewState extends State<SearchView> {
       final searchSnapshot = await _firestore
           .collection('products')
           .where('name', isGreaterThanOrEqualTo: query)
-          .where('name', isLessThanOrEqualTo: '$query\uf8ff')
+          .where('name', isLessThanOrEqualTo: '$query')
           .get();
 
       // List to hold the final filtered products with their store data
@@ -219,9 +247,15 @@ class _SearchViewState extends State<SearchView> {
   }
 
   Widget _buildSearchResults() {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     if (_searchResults.isEmpty) {
-      return const Center(
-        child: Text("No results found."),
+      return Center(
+        child: Text(
+          "No results found.",
+          style: tt.bodyLarge?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
+        ),
       );
     }
 
