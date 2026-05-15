@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -181,7 +182,7 @@ class _ProductPageState extends State<ProductPage> {
                           IconButton(
                             icon: Icon(
                               isFavorite ? Icons.favorite : Icons.favorite_border,
-                              color: const Color(0xFF0AB68B),
+                              color: AppColors.primaryColor,
                             ),
                             onPressed: _toggleFavorite,
                           ),
@@ -192,7 +193,7 @@ class _ProductPageState extends State<ProductPage> {
                         children: [
                           Text(
                             '\u{20B1}${batchData?['price']?.toStringAsFixed(2) ?? productData['price']}/${productData['quantifier'] ?? 'unit'}',
-                            style: const TextStyle(fontSize: 20, color: Color(0xFF0AB68B), fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontSize: 20, color: AppColors.primaryColor, fontWeight: FontWeight.bold),
                           ),
                           Text(
                             batchData != null && batchData['expiryDate'] != null
@@ -336,7 +337,7 @@ class _ProductPageState extends State<ProductPage> {
               onPressed: _selectedBatch != null ? () => _addToCart(context, _selectedBatch!.id, _quantity) : null,
               // Disable button until a batch is loaded
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0AB68B),
+                backgroundColor: AppColors.primaryColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),

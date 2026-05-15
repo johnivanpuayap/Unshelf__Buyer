@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -53,7 +54,7 @@ class OrderHistoryView extends StatelessWidget {
     final FirebaseAuth _auth = FirebaseAuth.instance;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0AB68B),
+        backgroundColor: AppColors.primaryColor,
         elevation: 0,
         toolbarHeight: 65,
         title: const Text(

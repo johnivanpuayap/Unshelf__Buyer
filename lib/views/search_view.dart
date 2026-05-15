@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +29,7 @@ class _SearchViewState extends State<SearchView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0AB68B),
+        backgroundColor: AppColors.primaryColor,
         elevation: 0,
         toolbarHeight: 80,
         title: Container(
@@ -65,7 +66,7 @@ class _SearchViewState extends State<SearchView> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4.0),
           child: Container(
-            color: const Color(0xFF92DE8B),
+            color: AppColors.lightColor,
             height: 4.0,
           ),
         ),

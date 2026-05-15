@@ -1,4 +1,5 @@
 // views/edit_store_location_view.dart
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +16,7 @@ class EditOrderAddressView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0AB68B),
+        backgroundColor: AppColors.primaryColor,
         elevation: 0,
         toolbarHeight: 65,
         title: const Text(

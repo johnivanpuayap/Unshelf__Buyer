@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
@@ -13,7 +14,7 @@ class StoreAddressView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0AB68B),
+        backgroundColor: AppColors.primaryColor,
         elevation: 0,
         toolbarHeight: 65,
         title: const Text(

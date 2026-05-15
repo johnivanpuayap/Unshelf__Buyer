@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -336,7 +337,7 @@ class _StoreViewState extends State<StoreView> {
   //               ),
   //               Text(
   //                 '  PHP${batchData['price'].toStringAsFixed(2)}',
-  //                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF0AB68B)),
+  //                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryColor),
   //               ),
   //               // Text(
   //               //   '  ${batchData['quantity']} in stock',
@@ -365,7 +366,7 @@ class _StoreViewState extends State<StoreView> {
             Navigator.pop(context);
           },
         ),
-        backgroundColor: const Color(0xFF0AB68B),
+        backgroundColor: AppColors.primaryColor,
       ),
       body: Consumer<StoreViewModel>(
         builder: (context, storeViewModel, child) {
@@ -406,7 +407,7 @@ class _StoreViewState extends State<StoreView> {
                     // Store Header
                     Container(
                       padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 10, bottom: 20.0),
-                      color: const Color(0xFF0AB68B),
+                      color: AppColors.primaryColor,
                       child: Row(
                         children: [
                           CircleAvatar(
@@ -484,7 +485,7 @@ class _StoreViewState extends State<StoreView> {
                     PreferredSize(
                       preferredSize: const Size.fromHeight(4.0),
                       child: Container(
-                        color: const Color(0xFF92DE8B),
+                        color: AppColors.lightColor,
                         height: 6.0,
                       ),
                     ),
@@ -551,7 +552,7 @@ class _StoreViewState extends State<StoreView> {
                     //               style: const TextStyle(
                     //                 fontSize: 18,
                     //                 fontWeight: FontWeight.bold,
-                    //                 color: Color(0xFF0AB68B),
+                    //                 color: AppColors.primaryColor,
                     //               ),
                     //             ),
                     //             const SizedBox(height: 8.0),

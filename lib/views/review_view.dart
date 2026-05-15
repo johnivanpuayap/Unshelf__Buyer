@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -80,7 +81,7 @@ class _ReviewPageState extends State<ReviewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0AB68B),
+        backgroundColor: AppColors.primaryColor,
         elevation: 0,
         toolbarHeight: 65,
         title: const Text(
@@ -93,7 +94,7 @@ class _ReviewPageState extends State<ReviewPage> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4.0),
           child: Container(
-            color: const Color(0xFF92DE8B),
+            color: AppColors.lightColor,
             height: 6.0,
           ),
         ),

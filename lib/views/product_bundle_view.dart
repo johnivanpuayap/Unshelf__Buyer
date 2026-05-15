@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -109,7 +110,7 @@ class _BundleViewState extends State<BundleView> {
                         children: [
                           Text(
                             '\u{20B1}${(bundleData?['price'].toDouble() * (1 - bundleData?['discount'] / 100).toDouble())?.toStringAsFixed(2)}',
-                            style: const TextStyle(fontSize: 20, color: Color(0xFF0AB68B), fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontSize: 20, color: AppColors.primaryColor, fontWeight: FontWeight.bold),
                           ),
                           Text('Stock: ${bundleData['stock']}', style: TextStyle(fontSize: 20, color: Colors.grey[500])),
                         ],
@@ -247,7 +248,7 @@ class _BundleViewState extends State<BundleView> {
             ElevatedButton(
               onPressed: () => _addToCart(context, widget.bundleId, _quantity), // Disable button until a batch is loaded
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0AB68B),
+                backgroundColor: AppColors.primaryColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -295,7 +296,7 @@ class _BundleViewState extends State<BundleView> {
                   padding: const EdgeInsets.all(8.0),
                   child: Text(product['name'] ?? 'Unnamed', style: const TextStyle(fontSize: 15)),
                 ),
-                // Text('P $price', style: const TextStyle(fontSize: 12, color: Color(0xFF0AB68B))),
+                // Text('P $price', style: const TextStyle(fontSize: 12, color: AppColors.primaryColor)),
               ],
             ),
           ),

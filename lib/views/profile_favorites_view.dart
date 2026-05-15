@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -133,7 +134,7 @@ class FavoritesView extends StatelessWidget {
                   ),
                 ), // Heart button (Remove from favorites)
                 IconButton(
-                  icon: const Icon(Icons.favorite, color: const Color(0xFF0AB68B)),
+                  icon: const Icon(Icons.favorite, color: AppColors.primaryColor),
                   onPressed: () {
                     _removeFromFavorites(productId);
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -164,7 +165,7 @@ class FavoritesView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0AB68B),
+        backgroundColor: AppColors.primaryColor,
         elevation: 0,
         toolbarHeight: 65,
         title: const Text(
@@ -177,7 +178,7 @@ class FavoritesView extends StatelessWidget {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4.0),
           child: Container(
-            color: const Color(0xFF92DE8B),
+            color: AppColors.lightColor,
             height: 6.0,
           ),
         ),

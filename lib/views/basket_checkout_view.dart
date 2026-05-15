@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -223,7 +224,7 @@ class _CheckoutViewState extends State<CheckoutView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0AB68B),
+        backgroundColor: AppColors.primaryColor,
         elevation: 0,
         toolbarHeight: 65,
         title: const Text("Checkout", style: TextStyle(color: Colors.white, fontSize: 25.0)),
@@ -231,7 +232,7 @@ class _CheckoutViewState extends State<CheckoutView> {
           IconButton(
             icon: const CircleAvatar(
               backgroundColor: Colors.white,
-              child: Icon(Icons.message, color: Color(0xFF0AB68B)),
+              child: Icon(Icons.message, color: AppColors.primaryColor),
             ),
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen()));
@@ -241,7 +242,7 @@ class _CheckoutViewState extends State<CheckoutView> {
         bottom: PreferredSize(
             preferredSize: const Size.fromHeight(4.0),
             child: Container(
-              color: const Color(0xFF92DE8B),
+              color: AppColors.lightColor,
               height: 6.0,
             )),
       ),
@@ -267,10 +268,10 @@ class _CheckoutViewState extends State<CheckoutView> {
                 OutlinedButton(
                   onPressed: _selectPickupDateTime,
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFF0AB68B)),
+                    side: const BorderSide(color: AppColors.primaryColor),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
                   ),
-                  child: const Text('Pickup Time', style: TextStyle(color: Color(0xFF0AB68B))),
+                  child: const Text('Pickup Time', style: TextStyle(color: AppColors.primaryColor)),
                 ),
                 const SizedBox(width: 10),
                 if (selectedPickupDateTime != null)
@@ -335,7 +336,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                         updateTotal();
                       },
                       value: usePoints,
-                      activeColor: const Color(0xFF0AB68B)),
+                      activeColor: AppColors.primaryColor),
                   const SizedBox(width: 10),
                   Text(
                     "Use points: -${points.toString()}.00 PHP",
@@ -355,7 +356,7 @@ class _CheckoutViewState extends State<CheckoutView> {
             ElevatedButton(
               onPressed: selectedPickupDateTime == null ? null : _confirmOrder,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0AB68B),
+                backgroundColor: AppColors.primaryColor,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               ),
               child: const Padding(
@@ -375,13 +376,13 @@ class _CheckoutViewState extends State<CheckoutView> {
       child: OutlinedButton(
         onPressed: () => selectPaymentMethod(method),
         style: OutlinedButton.styleFrom(
-          backgroundColor: isSelected ? const Color(0xFF0AB68B) : Colors.transparent,
-          side: const BorderSide(color: Color(0xFF0AB68B)),
+          backgroundColor: isSelected ? AppColors.primaryColor : Colors.transparent,
+          side: const BorderSide(color: AppColors.primaryColor),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
         ),
         child: Text(
           method,
-          style: TextStyle(color: isSelected ? Colors.white : const Color(0xFF0AB68B)),
+          style: TextStyle(color: isSelected ? Colors.white : AppColors.primaryColor),
         ),
       ),
     );

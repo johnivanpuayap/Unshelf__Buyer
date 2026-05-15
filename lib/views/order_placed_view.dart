@@ -1,3 +1,4 @@
+import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:unshelf_buyer/views/home_view.dart';
 
@@ -19,7 +20,7 @@ class OrderPlacedView extends StatelessWidget {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF0AB68B),
+                color: AppColors.primaryColor,
               ),
             ),
             const SizedBox(height: 8),
@@ -43,7 +44,7 @@ class OrderPlacedView extends StatelessWidget {
                     text: 'Order Tracking',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF0AB68B),
+                      color: AppColors.primaryColor,
                     ),
                   ),
                   const TextSpan(text: ' page in Profile'),
@@ -53,7 +54,7 @@ class OrderPlacedView extends StatelessWidget {
             const SizedBox(height: 24),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0AB68B),
+                backgroundColor: AppColors.primaryColor,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
