@@ -70,7 +70,7 @@ class _EditOrderAddressViewState extends ConsumerState<EditOrderAddressView> {
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             userAgentPackageName: 'ph.unshelf.buyer',
           ),
-          const CurrentLocationLayer(),
+          CurrentLocationLayer(),
           MarkerLayer(
             markers: [
               Marker(
