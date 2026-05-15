@@ -1,56 +1,44 @@
-import 'package:unshelf_buyer/utils/colors.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
-import 'package:unshelf_buyer/data/repositories/firebase/firebase_auth_repository.dart';
-import 'package:unshelf_buyer/data/repositories/firebase/firebase_stores_repository.dart';
-import 'package:unshelf_buyer/data/repositories/firebase/firebase_user_repository.dart';
-import 'package:unshelf_buyer/viewmodels/order_viewmodel.dart';
-import 'package:unshelf_buyer/viewmodels/store_viewmodel.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:unshelf_buyer/theme/unshelf_theme.dart';
 import 'package:unshelf_buyer/views/home_view.dart';
 import 'package:unshelf_buyer/authentication/views/login_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // load env
   await dotenv.load(fileName: ".env");
 
-  // assign publishable key to flutter_stripe
-  Stripe.publishableKey = dotenv.env['stripePublishableKey'] ?? '';
+  // Stripe is only used for payments — leaving the publishable key empty
+  // on web is fine for login + browsing flows.
+  if (!kIsWeb) {
+    Stripe.publishableKey = dotenv.env['stripePublishableKey'] ?? '';
+  }
 
-  // initialize firebase app
   await Firebase.initializeApp(
     options: FirebaseOptions(
-      apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '',
-      appId: "1:733152787617:android:3c3e7b87d0cb7c59f544e0",
-      messagingSenderId: "733152787617",
-      projectId: "unshelf-d4567",
-      storageBucket: "unshelf-d4567.appspot.com",
+      apiKey: kIsWeb
+          ? dotenv.env['FIREBASE_WEB_API_KEY']!
+          : dotenv.env['FIREBASE_API_KEY']!,
+      appId: kIsWeb
+          ? dotenv.env['FIREBASE_WEB_APP_ID']!
+          : dotenv.env['FIREBASE_APP_ID']!,
+      messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID']!,
+      projectId: dotenv.env['FIREBASE_PROJECT_ID']!,
+      storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET']!,
     ),
   );
 
+  UnshelfTheme.preloadFonts();
+
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) {
-          final vm = StoreViewModel(
-            authRepository: FirebaseAuthRepository(),
-            userRepository: FirebaseUserRepository(),
-            storesRepository: FirebaseStoresRepository(),
-          );
-          // Preserve original behavior: kick off fetch for the placeholder store
-          vm.fetchStoreDetails('2gxma4nHjhcHsOgDDDarlyeEvy12');
-          return vm;
-        }),
-        ChangeNotifierProvider(create: (_) => OrderViewModel()),
-        // Add more providers here
-      ],
-      child: const MyApp(),
+    const ProviderScope(
+      child: MyApp(),
     ),
   );
 }
@@ -58,27 +46,17 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Unshelf',
-      theme: ThemeData(
-        scaffoldBackgroundColor: Colors.white,
-        appBarTheme: const AppBarTheme(iconTheme: IconThemeData(color: Colors.white)),
-        bottomAppBarTheme: const BottomAppBarTheme(color: Colors.white, shadowColor: Colors.grey, elevation: 20),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Colors.white,
-          selectedItemColor: AppColors.primaryColor,
-          unselectedItemColor: Colors.grey,
-        ),
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryColor),
-        useMaterial3: true,
-        textTheme: GoogleFonts.jostTextTheme(Theme.of(context).textTheme)
-            .apply(displayColor: AppColors.primaryColor, bodyColor: Colors.black),
-      ),
+      theme: UnshelfTheme.light(),
+      darkTheme: UnshelfTheme.dark(),
+      themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
-      home: FirebaseAuth.instance.currentUser != null ? HomeView() : LoginView(),
+      home: FirebaseAuth.instance.currentUser != null
+          ? HomeView()
+          : const LoginView(),
     );
   }
 }
