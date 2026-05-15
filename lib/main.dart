@@ -5,7 +5,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:unshelf_buyer/viewmodels/home_view_model.dart';
 import 'package:unshelf_buyer/viewmodels/order_viewmodel.dart';
 import 'package:unshelf_buyer/viewmodels/store_viewmodel.dart';
 import 'package:unshelf_buyer/views/home_view.dart';
