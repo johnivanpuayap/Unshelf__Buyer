@@ -1,18 +1,28 @@
-// views/edit_store_location_view.dart
+// views/order_address_view.dart
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:unshelf_buyer/viewmodels/order_address_viewmodel.dart';
 
-class EditOrderAddressView extends StatelessWidget {
-  // final StoreModel storeDetails;
-  double latitude = 10.3157;
-  double longitude = 123.8854;
+class EditOrderAddressView extends ConsumerStatefulWidget {
+  const EditOrderAddressView({super.key});
 
-  GoogleMapController? _mapController;
+  @override
+  ConsumerState<EditOrderAddressView> createState() =>
+      _EditOrderAddressViewState();
+}
+
+class _EditOrderAddressViewState extends ConsumerState<EditOrderAddressView> {
+  final MapController _mapController = MapController();
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final vmState = ref.watch(orderAddressViewModelProvider);
+    final vm = ref.read(orderAddressViewModelProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -28,61 +38,63 @@ class EditOrderAddressView extends StatelessWidget {
             icon: Icon(Icons.save, color: cs.onPrimary),
             onPressed: () async {
               try {
-                // save location logic
-                // viewModel.saveLocation();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Location saved successfully!')),
-                );
-                Navigator.pop(context, true);
+                await vm.saveLocation();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Location saved successfully!')),
+                  );
+                  Navigator.pop(context, true);
+                }
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Failed to save location: $e')),
-                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to save location: $e')),
+                  );
+                }
               }
             },
           ),
         ],
       ),
-      body: GoogleMap(
-        initialCameraPosition: CameraPosition(
-          target: latitude != null && longitude != null
-              ? LatLng(
-                  latitude!,
-                  longitude!,
-                )
-              : const LatLng(10.3521, 103.8198),
-          zoom: 15,
+      body: FlutterMap(
+        mapController: _mapController,
+        options: MapOptions(
+          initialCenter: vmState.chosenLocation,
+          initialZoom: 15,
+          onTap: (tapPosition, point) {
+            vm.updateLocation(point);
+          },
         ),
-        onMapCreated: setMapController,
-        onTap: (LatLng location) {
-          latitude = location.latitude;
-          longitude = location.longitude;
-          ("LOCATION:  $latitude $longitude");
-          // update location!
-          // viewModel.updateLocation(location);
-        },
-        markers: {
-          Marker(
-            markerId: const MarkerId('chosen_location'),
-            position: LatLng(
-              latitude ?? 10.3092615,
-              longitude ?? 123.8863528,
-            ),
-            draggable: true,
-            onDragEnd: (LatLng newPosition) {
-              latitude = newPosition.latitude;
-              longitude = newPosition.longitude;
-              ("POSITION:  $latitude $longitude");
-              // viewModel.updateLocation(newPosition);
-              // insert update location logic here
-            },
+        children: [
+          TileLayer(
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            userAgentPackageName: 'ph.unshelf.buyer',
           ),
-        },
+          const CurrentLocationLayer(),
+          MarkerLayer(
+            markers: [
+              Marker(
+                point: vmState.chosenLocation,
+                rotate: true,
+                child: const Icon(
+                  Icons.location_pin,
+                  color: Colors.red,
+                  size: 40,
+                ),
+              ),
+            ],
+          ),
+          RichAttributionWidget(attributions: [
+            TextSourceAttribution(
+              '© OpenStreetMap contributors',
+              textStyle: TextStyle(
+                color: cs.onSurface,
+                fontSize: 11,
+              ),
+            ),
+          ]),
+        ],
       ),
     );
-  }
-
-  setMapController(GoogleMapController controller) {
-    _mapController = controller;
   }
 }

@@ -170,12 +170,21 @@ class _MapPageState extends State<MapPage> with AutomaticKeepAliveClientMixin<Ma
                     children: [
                       TileLayer(
                         urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.example.app',
+                        userAgentPackageName: 'ph.unshelf.buyer',
                       ),
                       CurrentLocationLayer(),
                       MarkerLayer(
                         markers: snapshot.data!.toList(),
-                      )
+                      ),
+                      RichAttributionWidget(attributions: [
+                        TextSourceAttribution(
+                          '© OpenStreetMap contributors',
+                          textStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ]),
                     ],
                   );
                 }
