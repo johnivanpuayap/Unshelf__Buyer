@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -51,18 +50,17 @@ class OrderHistoryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     final FirebaseAuth _auth = FirebaseAuth.instance;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
         elevation: 0,
         toolbarHeight: 65,
-        title: const Text(
+        title: Text(
           "Order History",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 25,
-          ),
+          style: tt.titleLarge?.copyWith(color: cs.onPrimary),
         ),
       ),
       body: StreamBuilder(
@@ -91,17 +89,15 @@ class OrderHistoryView extends StatelessWidget {
                   final orderDetails = orderSnapshot.data!;
                   final storeName = orderDetails['storeName'];
                   final storeImageUrl = orderDetails['storeImageUrl'];
-                  final isPaid = orderDetails['isPaid'];
-                  final status = orderDetails['status'];
                   final total = orderDetails['totalPrice'];
                   final pickupTime = orderDetails['pickupTime'];
-                  final pickupCode = orderDetails['pickupCode'];
                   final orderItems = orderDetails['orderItems'];
                   final createdAt = orderDetails['createdAt'];
 
                   return Card(
                     elevation: 0,
-                    margin: const EdgeInsets.all(0.0),
+                    margin: EdgeInsets.zero,
+                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -110,58 +106,67 @@ class OrderHistoryView extends StatelessWidget {
                             radius: 24,
                             backgroundImage: NetworkImage(storeImageUrl),
                           ),
-                          title: Text(storeName),
+                          title: Text(storeName, style: tt.titleMedium),
                         ),
-                        const Divider(),
+                        const Divider(height: 1),
                         ListTile(
-                          subtitle: Text("Ordered On: $createdAt\nPickup Time: $pickupTime "),
+                          subtitle: Text(
+                            "Ordered On: $createdAt\nPickup Time: $pickupTime",
+                            style: tt.bodySmall?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
+                          ),
                         ),
-                        const Divider(),
+                        const Divider(height: 1),
                         ...orderItems.map<Widget>((item) {
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                             child: Row(
                               children: [
-                                Image.network(item['mainImageUrl'], width: 60, height: 60, fit: BoxFit.cover),
-                                const SizedBox(width: 10),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(item['mainImageUrl'], width: 60, height: 60, fit: BoxFit.cover),
+                                ),
+                                const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(item['name'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                                      Text(
+                                        item['name'],
+                                        style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                                      ),
                                       Text(
                                         'PHP ${item['price']} / ${item['quantifier']}',
-                                        style: const TextStyle(color: Colors.grey),
+                                        style: tt.bodySmall?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
                                       ),
                                       Text(
                                         'x${item['quantity']}',
-                                        style: const TextStyle(color: Colors.grey),
+                                        style: tt.bodySmall?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
                                       ),
                                     ],
                                   ),
                                 ),
                                 Text(
                                   '₱${(item['price'] * item['quantity']).toStringAsFixed(2)}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
                           );
                         }).toList(),
-                        const Divider(),
+                        const Divider(height: 1),
                         Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Text("Total: ₱${total.toStringAsFixed(2)}",
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              Text(
+                                "Total: ₱${total.toStringAsFixed(2)}",
+                                style: tt.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                              ),
                             ],
                           ),
                         ),
-                        const Divider(
-                          thickness: 10,
-                        ),
+                        Divider(thickness: 8, color: cs.surfaceContainerHighest),
                       ],
                     ),
                   );

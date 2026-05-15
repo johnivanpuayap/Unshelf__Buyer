@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -21,14 +20,12 @@ class _ReportFormViewState extends State<ReportFormView> {
       setState(() => _isSubmitting = true);
 
       try {
-        // Get the current user's ID
         final user = FirebaseAuth.instance.currentUser;
 
         if (user == null) {
           throw Exception('User not logged in');
         }
 
-        // Create a report model
         final report = ReportModel(
           userId: user.uid,
           title: _titleController.text,
@@ -36,15 +33,12 @@ class _ReportFormViewState extends State<ReportFormView> {
           createdAt: DateTime.now(),
         );
 
-        // Save report to Firestore
         await FirebaseFirestore.instance.collection('reports').add(report.toJson());
 
-        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Report submitted successfully!')),
+          const SnackBar(content: Text('Report submitted successfully!')),
         );
 
-        // Clear the form
         _formKey.currentState!.reset();
         _titleController.clear();
         _descriptionController.clear();
@@ -60,72 +54,67 @@ class _ReportFormViewState extends State<ReportFormView> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
         elevation: 0,
         toolbarHeight: 65,
-        title: const Text(
+        title: Text(
           "Submit a Report",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 25,
-          ),
+          style: tt.titleLarge?.copyWith(color: cs.onPrimary),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4.0),
-          child: Container(
-            color: AppColors.lightColor,
-            height: 6.0,
-          ),
+          child: Container(color: cs.secondary, height: 4.0),
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Report Title
+                Text('Report Title', style: tt.titleMedium),
+                const SizedBox(height: 8),
                 TextFormField(
                   controller: _titleController,
-                  decoration: const InputDecoration(
-                    labelText: 'Title',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    hintText: 'Enter a brief title',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   validator: (value) => value!.isEmpty ? 'Title is required' : null,
                 ),
-                const SizedBox(height: 16),
-
-                // Report Description
+                const SizedBox(height: 20),
+                Text('Description', style: tt.titleMedium),
+                const SizedBox(height: 8),
                 TextFormField(
                   controller: _descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Description',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    hintText: 'Describe the issue in detail',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  maxLines: 5,
+                  maxLines: 6,
                   validator: (value) => value!.isEmpty ? 'Description is required' : null,
                 ),
-                const SizedBox(height: 24),
-
-                // Submit Button
-                Center(
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isSubmitting ? null : _submitReport,
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                      backgroundColor: cs.primary,
+                      foregroundColor: cs.onPrimary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                     ),
                     child: _isSubmitting
-                        ? const CircularProgressIndicator(
-                            color: Colors.white,
-                          )
-                        : const Text(
-                            'Submit Report',
-                            style: TextStyle(fontSize: 18),
-                          ),
+                        ? CircularProgressIndicator(color: cs.onPrimary)
+                        : Text('Submit Report', style: tt.labelLarge?.copyWith(color: cs.onPrimary)),
                   ),
                 ),
               ],

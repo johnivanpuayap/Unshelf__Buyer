@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -19,31 +18,31 @@ class NotificationsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userId = FirebaseAuth.instance.currentUser!.uid;
-    final favoritesRef = FirebaseFirestore.instance.collection('users').doc(userId).collection('favorites');
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: AppColors.primaryColor,
+          backgroundColor: cs.primary,
           elevation: 0,
           toolbarHeight: 65,
-          title: const Text(
+          title: Text(
             "Notifications",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 25,
-            ),
+            style: tt.headlineSmall?.copyWith(color: cs.onPrimary),
           ),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(4.0),
             child: Container(
-              color: AppColors.lightColor,
-              height: 6.0,
+              color: cs.primary.withValues(alpha: 0.6),
+              height: 4.0,
             ),
           ),
         ),
-        body: const Center(
-          child: Text("You have no notifications."),
+        body: Center(
+          child: Text(
+            "You have no notifications.",
+            style: tt.bodyLarge?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
+          ),
         ),
         bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 3));
   }

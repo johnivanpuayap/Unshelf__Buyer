@@ -21,7 +21,6 @@ class CustomBottomNavigationBar extends StatefulWidget {
 class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
   late int _selectedIndex;
 
-  // List of pages for navigation
   final List<Widget> _pages = [
     HomeView(),
     const StoresView(),
@@ -61,8 +60,10 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return BottomNavigationBar(
-      backgroundColor: Colors.white,
+      backgroundColor: cs.surface,
       elevation: 10,
       currentIndex: _selectedIndex,
       onTap: _onItemTapped,

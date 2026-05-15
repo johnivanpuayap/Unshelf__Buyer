@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -46,9 +45,12 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
         elevation: 0,
         toolbarHeight: 80,
         title: GestureDetector(
@@ -68,14 +70,19 @@ class _HomeViewState extends State<HomeView> {
           child: Container(
             height: 50,
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 5,
-                  offset: const Offset(0, 0),
-                )
+                  color: Colors.black.withValues(alpha: 0.02),
+                  offset: const Offset(0, 1),
+                  blurRadius: 0,
+                ),
+                BoxShadow(
+                  color: const Color(0xFF1F2A20).withValues(alpha: 0.06),
+                  offset: const Offset(0, 8),
+                  blurRadius: 28,
+                ),
               ],
             ),
             child: Row(
@@ -83,19 +90,19 @@ class _HomeViewState extends State<HomeView> {
                 // Search icon
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Icon(Icons.search, color: Colors.grey[600]),
+                  child: Icon(Icons.search, color: cs.onSurface.withValues(alpha: 0.6)),
                 ),
                 Expanded(
                   child: Text(
                     "Search",
-                    style: TextStyle(color: Colors.grey[600]),
+                    style: tt.bodyMedium?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
                   ),
                 ),
                 // Divider
                 Container(
                   height: 24,
                   width: 1,
-                  color: Colors.grey[300],
+                  color: cs.outline,
                 ),
                 // Favorites icon with ripple effect
                 Material(
@@ -114,12 +121,12 @@ class _HomeViewState extends State<HomeView> {
                         ),
                       );
                     },
-                    borderRadius: BorderRadius.circular(10),
-                    splashColor: Colors.grey.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                    splashColor: cs.onSurface.withValues(alpha: 0.08),
                     splashFactory: InkRipple.splashFactory,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                      child: Icon(Icons.favorite_border, color: Colors.grey[600]),
+                      child: Icon(Icons.favorite_border, color: cs.onSurface.withValues(alpha: 0.6)),
                     ),
                   ),
                 )
@@ -130,7 +137,7 @@ class _HomeViewState extends State<HomeView> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4.0),
           child: Container(
-            color: AppColors.lightColor,
+            color: cs.primary.withValues(alpha: 0.6),
             height: 4.0,
           ),
         ),
@@ -145,8 +152,8 @@ class _HomeViewState extends State<HomeView> {
         children: [
           FloatingActionButton(
             heroTag: 'basket',
-            backgroundColor: Colors.white,
-            child: Icon(Icons.shopping_basket_outlined, color: Colors.grey[600]),
+            backgroundColor: cs.surface,
+            child: Icon(Icons.shopping_basket_outlined, color: cs.onSurface.withValues(alpha: 0.6)),
             onPressed: () {
               Navigator.push(
                 context,
@@ -154,11 +161,11 @@ class _HomeViewState extends State<HomeView> {
               );
             },
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           FloatingActionButton(
             heroTag: 'message',
-            backgroundColor: Colors.white,
-            child: Icon(Icons.message_outlined, color: Colors.grey[600]),
+            backgroundColor: cs.surface,
+            child: Icon(Icons.message_outlined, color: cs.onSurface.withValues(alpha: 0.6)),
             onPressed: () {
               Navigator.push(
                 context,
@@ -194,10 +201,10 @@ class _HomeViewState extends State<HomeView> {
             children: [
               CategoryIconsRow(),
               _buildCarouselBanner(),
-              Divider(color: Colors.grey[200]),
+              Divider(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
               const SizedBox(),
               _buildProductCarousel(products),
-              Divider(color: Colors.grey[200]),
+              Divider(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
               _buildBundleDealsSection(),
             ],
           ),
@@ -207,14 +214,15 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget _buildProductCarousel(List<DocumentSnapshot> products) {
+    final tt = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
           child: Text(
             "Hot Products",
-            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+            style: tt.titleLarge,
           ),
         ),
         CarouselSlider(
@@ -236,6 +244,9 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget _buildProductCard(Map<String, dynamic> data, String productId, bool isBundle, BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -257,37 +268,34 @@ class _HomeViewState extends State<HomeView> {
             height: 120,
             width: 140,
             clipBehavior: Clip.none,
-            margin: const EdgeInsets.only(top: 10),
-            // decoration: BoxDecoration(
-            //   boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 1, offset: const Offset(0, 5))],
-            // ),
+            margin: const EdgeInsets.only(top: 8),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(14),
               child: CachedNetworkImage(
                 imageUrl: data['mainImageUrl'],
                 fit: BoxFit.cover,
               ),
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 4),
           Wrap(
             alignment: WrapAlignment.start,
             children: [
               Text(
                 data['name'],
-                style: const TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.black),
+                style: tt.titleSmall?.copyWith(color: cs.onSurface),
               ),
             ],
           ),
           if (isBundle)
             Text(
               "PHP ${(data['price']!.toDouble() * (1 - data['discount'] / 100).toDouble()).toStringAsFixed(2)}",
-              style: const TextStyle(fontSize: 14.0, color: Colors.grey),
+              style: tt.bodySmall?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
             )
           else
             Text(
               "PHP ${minPrices[productId]!.toStringAsFixed(2)}",
-              style: const TextStyle(fontSize: 14.0, color: Colors.grey),
+              style: tt.bodySmall?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
             ),
         ],
       )),
@@ -314,12 +322,15 @@ class _HomeViewState extends State<HomeView> {
                 builder: (BuildContext context) {
                   return Container(
                     width: MediaQuery.of(context).size.width,
-                    margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                    child: CachedNetworkImage(
-                      imageUrl: url,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                      errorWidget: (context, url, error) => const Center(child: Icon(Icons.error)),
+                    margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: CachedNetworkImage(
+                        imageUrl: url,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) => const Center(child: Icon(Icons.error)),
+                      ),
                     ),
                   );
                 },
@@ -345,6 +356,7 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget _buildBundleDealsSection() {
+    final tt = Theme.of(context).textTheme;
     return FutureBuilder<List<DocumentSnapshot>>(
       future: _fetchBundles(),
       builder: (context, snapshot) {
@@ -359,11 +371,11 @@ class _HomeViewState extends State<HomeView> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
               child: Text(
                 "Bundle Deals",
-                style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                style: tt.titleLarge,
               ),
             ),
             CarouselSlider(

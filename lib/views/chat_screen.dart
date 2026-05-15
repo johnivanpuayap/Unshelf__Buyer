@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,30 +15,30 @@ class _ChatScreenState extends State<ChatScreen> with AutomaticKeepAliveClientMi
   @override
   bool get wantKeepAlive => true;
 
-  // get instance of auth
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
         elevation: 0,
         toolbarHeight: 65,
-        title: const Text(
+        title: Text(
           "Chat",
-          style: TextStyle(
-            fontSize: 25.0,
-            color: Color.fromARGB(255, 255, 255, 255),
-          ),
+          style: tt.titleLarge?.copyWith(color: cs.onPrimary),
         ),
         actions: [
           IconButton(
-            icon: const CircleAvatar(
-              backgroundColor: Colors.white,
+            icon: CircleAvatar(
+              backgroundColor: cs.surface,
               child: Icon(
                 Icons.shopping_basket,
-                color: AppColors.primaryColor,
+                color: cs.primary,
               ),
             ),
             onPressed: () {
@@ -54,11 +53,9 @@ class _ChatScreenState extends State<ChatScreen> with AutomaticKeepAliveClientMi
           ),
         ],
         bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(4.0),
-            child: Container(
-              color: AppColors.lightColor,
-              height: 6.0,
-            )),
+          preferredSize: const Size.fromHeight(4.0),
+          child: Container(color: cs.secondary, height: 4.0),
+        ),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('stores').orderBy('store_name').snapshots(),
@@ -74,7 +71,7 @@ class _ChatScreenState extends State<ChatScreen> with AutomaticKeepAliveClientMi
           if (snapshot.hasData) {
             return ListView.separated(
               separatorBuilder: (BuildContext context, int index) {
-                return const SizedBox(height: 10);
+                return Divider(height: 1, color: cs.outline);
               },
               itemCount: snapshot.data!.docs.length,
               itemBuilder: (context, index) {
@@ -95,7 +92,7 @@ class _ChatScreenState extends State<ChatScreen> with AutomaticKeepAliveClientMi
                     radius: 24,
                     backgroundImage: CachedNetworkImageProvider(data['store_image_url']),
                   ),
-                  title: Text(data['store_name']),
+                  title: Text(data['store_name'], style: tt.bodyLarge),
                 );
               },
             );

@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -37,8 +36,10 @@ class _BundleViewState extends State<BundleView> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
       body: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance.collection('bundles').doc(widget.bundleId).get(),
@@ -68,10 +69,10 @@ class _BundleViewState extends State<BundleView> {
                       left: 16.0,
                       child: FloatingActionButton(
                         onPressed: () => Navigator.pop(context),
-                        backgroundColor: Colors.white.withOpacity(0.6),
+                        backgroundColor: cs.surface.withValues(alpha: 0.85),
                         mini: true,
                         shape: const CircleBorder(),
-                        child: const Icon(Icons.arrow_back, color: Colors.black),
+                        child: Icon(Icons.arrow_back, color: cs.onSurface),
                       ),
                     ),
                     Positioned(
@@ -84,10 +85,10 @@ class _BundleViewState extends State<BundleView> {
                             MaterialPageRoute(builder: (context) => BasketView()),
                           );
                         },
-                        backgroundColor: Colors.white.withOpacity(0.6),
+                        backgroundColor: cs.surface.withValues(alpha: 0.85),
                         mini: true,
                         shape: const CircleBorder(),
-                        child: const Icon(Icons.shopping_basket, color: Colors.black),
+                        child: Icon(Icons.shopping_basket, color: cs.onSurface),
                       ),
                     ),
                   ],
@@ -101,23 +102,26 @@ class _BundleViewState extends State<BundleView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(bundleData['name'], style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-                      Divider(color: Colors.grey[200]),
+                      Text(bundleData['name'], style: tt.titleLarge?.copyWith(color: cs.onSurface)),
+                      Divider(color: cs.outline.withValues(alpha: 0.3)),
 
-                      const SizedBox(height: 5.0),
+                      const SizedBox(height: 4.0),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             '\u{20B1}${(bundleData?['price'].toDouble() * (1 - bundleData?['discount'] / 100).toDouble())?.toStringAsFixed(2)}',
-                            style: const TextStyle(fontSize: 20, color: AppColors.primaryColor, fontWeight: FontWeight.bold),
+                            style: tt.titleMedium?.copyWith(color: cs.primary, fontWeight: FontWeight.bold),
                           ),
-                          Text('Stock: ${bundleData['stock']}', style: TextStyle(fontSize: 20, color: Colors.grey[500])),
+                          Text(
+                            'Stock: ${bundleData['stock']}',
+                            style: tt.bodyLarge?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 5.0),
-                      Divider(color: Colors.grey[200]),
-                      const SizedBox(height: 5.0),
+                      const SizedBox(height: 4.0),
+                      Divider(color: cs.outline.withValues(alpha: 0.3)),
+                      const SizedBox(height: 4.0),
                       GestureDetector(
                         onTap: () {
                           if (sellerData != null) {
@@ -137,42 +141,38 @@ class _BundleViewState extends State<BundleView> {
                                       sellerData != null ? CachedNetworkImageProvider(sellerData!['store_image_url']) : null,
                                   radius: 20,
                                 ),
-                                const SizedBox(width: 15.0),
+                                const SizedBox(width: 16.0),
                                 Text(
                                   sellerData != null ? sellerData!['store_name'] : 'Loading...',
-                                  style: const TextStyle(fontSize: 15),
+                                  style: tt.bodyLarge?.copyWith(color: cs.onSurface),
                                 ),
                               ],
                             ),
                             const SizedBox(width: 20.0),
-                            Divider(color: Colors.grey[200]),
+                            Divider(color: cs.outline.withValues(alpha: 0.3)),
                             Container(
                               padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 12.0),
                               decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 255, 255, 138),
-                                borderRadius: BorderRadius.circular(12.0),
+                                color: cs.secondary.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(999),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Visit >',
-                                style: TextStyle(
-                                  fontSize: 12.0,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color.fromARGB(255, 250, 134, 0),
-                                ),
+                                style: tt.labelLarge?.copyWith(color: cs.secondary),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      Divider(color: Colors.grey[200]),
-                      const SizedBox(height: 10.0),
-                      const Text('Description', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 10.0),
-                      Text(bundleData['description'], style: const TextStyle(fontSize: 16)),
-                      const SizedBox(height: 10.0),
-                      Divider(color: Colors.grey[200]),
+                      Divider(color: cs.outline.withValues(alpha: 0.3)),
+                      const SizedBox(height: 8.0),
+                      Text('Description', style: tt.titleMedium?.copyWith(color: cs.onSurface)),
+                      const SizedBox(height: 8.0),
+                      Text(bundleData['description'], style: tt.bodyLarge?.copyWith(color: cs.onSurface)),
+                      const SizedBox(height: 8.0),
+                      Divider(color: cs.outline.withValues(alpha: 0.3)),
                       // Products in Bundle
-                      const Text('Products in this bundle', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      Text('Products in this bundle', style: tt.titleMedium?.copyWith(color: cs.onSurface)),
                       const SizedBox(height: 8.0),
                     ],
                   ),
@@ -193,7 +193,12 @@ class _BundleViewState extends State<BundleView> {
                   var batches = batchSnapshot.data!.docs;
 
                   if (batches.isEmpty) {
-                    return const SliverToBoxAdapter(child: Text('No products found in this bundle.'));
+                    return SliverToBoxAdapter(
+                      child: Text(
+                        'No products found in this bundle.',
+                        style: tt.bodyMedium?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
+                      ),
+                    );
                   }
 
                   return SliverToBoxAdapter(
@@ -230,15 +235,15 @@ class _BundleViewState extends State<BundleView> {
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.remove),
+                      icon: Icon(Icons.remove, color: cs.onSurface),
                       onPressed: _quantity > 1 ? () => setState(() => _quantity--) : null,
                     ),
                     Text(
                       _quantity.toString(),
-                      style: const TextStyle(fontSize: 18),
+                      style: tt.titleMedium?.copyWith(color: cs.onSurface),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.add),
+                      icon: Icon(Icons.add, color: cs.onSurface),
                       onPressed: () => setState(() => _quantity++),
                     ),
                   ],
@@ -246,17 +251,8 @@ class _BundleViewState extends State<BundleView> {
               ],
             ),
             ElevatedButton(
-              onPressed: () => _addToCart(context, widget.bundleId, _quantity), // Disable button until a batch is loaded
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                child: Text("ADD TO CART", style: TextStyle(fontSize: 16, color: Colors.white)),
-              ),
+              onPressed: () => _addToCart(context, widget.bundleId, _quantity),
+              child: Text("Add to basket", style: tt.labelLarge?.copyWith(color: cs.onPrimary)),
             )
           ],
         ),
@@ -265,6 +261,9 @@ class _BundleViewState extends State<BundleView> {
   }
 
   Widget _buildProductCard(String productId, dynamic price) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return FutureBuilder<DocumentSnapshot>(
       future: FirebaseFirestore.instance.collection('products').doc(productId).get(),
       builder: (context, productSnapshot) {
@@ -294,9 +293,11 @@ class _BundleViewState extends State<BundleView> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Text(product['name'] ?? 'Unnamed', style: const TextStyle(fontSize: 15)),
+                  child: Text(
+                    product['name'] ?? 'Unnamed',
+                    style: tt.bodySmall?.copyWith(color: cs.onSurface),
+                  ),
                 ),
-                // Text('P $price', style: const TextStyle(fontSize: 12, color: AppColors.primaryColor)),
               ],
             ),
           ),
@@ -318,16 +319,16 @@ Future<void> _addToCart(BuildContext context, String bundleId, int quantity) asy
           .set({'quantity': quantity});
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Added to Cart')),
+        const SnackBar(content: Text('Added to basket')),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You need to be logged in to add items to cart')),
+        const SnackBar(content: Text('You need to be logged in to add items to basket')),
       );
     }
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Failed to add to cart: $e')),
+      SnackBar(content: Text('Failed to add to basket: $e')),
     );
   }
 }

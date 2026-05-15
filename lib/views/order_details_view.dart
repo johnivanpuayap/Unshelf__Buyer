@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -29,16 +28,16 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
       ('? ${widget.orderDetails['orderId']}');
       await _firestore.collection('orders').doc(widget.orderDetails['docId']).update({'status': 'Cancelled'});
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Order has been canceled successfully."),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: const Text("Order has been canceled successfully."),
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Failed to cancel order: ${e.toString()}"),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
@@ -46,35 +45,33 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
         elevation: 0,
         toolbarHeight: 65,
-        title: const Text(
+        title: Text(
           "Order Details",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 25.0,
-          ),
+          style: tt.titleLarge?.copyWith(color: cs.onPrimary),
         ),
         bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(4.0),
-            child: Container(
-              color: AppColors.lightColor,
-              height: 6.0,
-            )),
+          preferredSize: const Size.fromHeight(4.0),
+          child: Container(
+            color: cs.secondary,
+            height: 4.0,
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
         child: SingleChildScrollView(
-          // Wrap everything in SingleChildScrollView
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(
-                height: 10,
-              ),
+              const SizedBox(height: 10),
               GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -89,16 +86,26 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Store Image
                       Container(
                         width: 100,
                         height: 80,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 5, offset: const Offset(0, 3))],
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.02),
+                              offset: const Offset(0, 1),
+                              blurRadius: 0,
+                            ),
+                            BoxShadow(
+                              color: const Color(0xFF1F2A20).withValues(alpha: 0.06),
+                              offset: const Offset(0, 8),
+                              blurRadius: 28,
+                            ),
+                          ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(14),
                           child: CachedNetworkImage(
                             imageUrl: widget.orderDetails['storeImageUrl'] ?? '',
                             fit: BoxFit.cover,
@@ -107,16 +114,14 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 30),
-
-                      // Store Details
+                      const SizedBox(width: 24),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.orderDetails['storeName'] ?? 'Unknown', // Store Name
-                              style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.black),
+                              widget.orderDetails['storeName'] ?? 'Unknown',
+                              style: tt.titleMedium,
                             ),
                             const SizedBox(height: 4),
                           ],
@@ -126,140 +131,65 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                   ),
                 ),
               ),
-              const SizedBox(
-                height: 10,
-              ),
-              // Row(
-              //   crossAxisAlignment: CrossAxisAlignment.center,
-              //   children: [
-              //     // Store Image
-              //     Container(
-              //       width: 100,
-              //       height: 80,
-              //       decoration: BoxDecoration(
-              //         borderRadius: BorderRadius.circular(10),
-              //         boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 5, offset: const Offset(0, 3))],
-              //       ),
-              //       child: ClipRRect(
-              //         borderRadius: BorderRadius.circular(10),
-              //         child: CachedNetworkImage(
-              //           imageUrl: widget.orderDetails['storeImageUrl'] ?? '',
-              //           fit: BoxFit.cover,
-              //           placeholder: (context, url) => const CircularProgressIndicator(),
-              //           errorWidget: (context, url, error) => const Icon(Icons.error),
-              //         ),
-              //       ),
-              //     ),
-              //     const SizedBox(width: 30),
-
-              //     // Store Details
-              //     Expanded(
-              //       child: Column(
-              //         crossAxisAlignment: CrossAxisAlignment.start,
-              //         children: [
-              //           Text(
-              //             widget.orderDetails['storeName'] ?? '', // Store Name
-              //             style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.black),
-              //           ),
-              //           const SizedBox(height: 4),
-              //         ],
-              //       ),
-              //     ), // Heart button (Remove from following)
-              //     // IconButton(
-              //     //   icon: const Icon(Icons.favorite, color: AppColors.primaryColor),
-              //     //   onPressed: () {
-              //     //     _removeFromFollowing(storeId);
-              //     //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              //     //       content: Text('Successfully removed from following list.'),
-              //     //     ));
-              //     //   },
-              //     // ),
-              //   ],
-              // ),
+              const SizedBox(height: 10),
               // Order Overview Card
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300), // Border color
-                  borderRadius: BorderRadius.circular(8), // Rounded corners
+                  color: cs.surfaceContainerHighest,
+                  border: Border.all(color: cs.outline),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Order ID: ${widget.orderDetails['orderId']}',
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
+                      style: tt.titleMedium,
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'Order Date: ${DateFormat('yyyy-MM-dd').format(widget.orderDetails['createdAt'])}',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey[700],
-                      ),
+                      style: tt.bodyMedium?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
                     ),
                     Text(
                       'Pickup Time: ${DateFormat('yyyy-MM-dd hh:mm a').format(widget.orderDetails['pickupTime']!)}',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey[700],
-                      ),
+                      style: tt.bodyMedium?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'Price: ₱${widget.orderDetails['totalPrice'].toStringAsFixed(2)}',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: tt.titleMedium?.copyWith(color: cs.primary),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
-                        // Box for Order Status
+                        // Status badge
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryColor,
-                            border: Border.all(
-                              color: Colors.black, // Border color
-                              width: 1.0, // Border width
-                            ),
-                            borderRadius: BorderRadius.circular(8),
+                            color: cs.primaryContainer,
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             widget.orderDetails['status'],
-                            style: const TextStyle(
-                              fontSize: 14.0, // Font size for the text
-                              color: Colors.black, // Text color
-                            ),
+                            style: tt.bodySmall?.copyWith(color: cs.onPrimaryContainer, fontWeight: FontWeight.w600),
                           ),
                         ),
-                        const SizedBox(width: 10), // Space between the boxes
-
-                        // Box for Paid or Not Paid
+                        const SizedBox(width: 8),
+                        // Paid badge
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: widget.orderDetails['isPaid'] ? AppColors.primaryColor : Colors.red,
-                            border: Border.all(
-                              color: Colors.black, // Border color
-                              width: 1.0, // Border width
-                            ),
-                            borderRadius: BorderRadius.circular(8),
+                            color: widget.orderDetails['isPaid'] ? cs.primaryContainer : cs.errorContainer,
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             widget.orderDetails['isPaid'] ? 'Paid' : 'Not Paid',
-                            style: const TextStyle(
-                              fontSize: 14.0,
-                              color: Colors.white, // White text for clarity
+                            style: tt.bodySmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: widget.orderDetails['isPaid'] ? cs.onPrimaryContainer : cs.onErrorContainer,
                             ),
                           ),
                         ),
@@ -269,35 +199,30 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                 ),
               ),
               const SizedBox(height: 20),
-              // Products List
-              const Text(
+              Text(
                 'Products',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+                style: tt.titleMedium,
               ),
               const SizedBox(height: 10),
-              // Products List View (no Expanded around it)
               ListView.builder(
                 itemCount: widget.orderDetails['orderItems'].length,
-                shrinkWrap: true, // Important for ListView inside scrollable widget
-                physics: const NeverScrollableScrollPhysics(), // Disable internal scrolling
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
                 itemBuilder: (context, index) {
                   return Card(
-                    elevation: 2,
+                    elevation: 0,
+                    color: cs.surfaceContainerHighest,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: Row(
                       children: [
                         ClipRRect(
-                          borderRadius: const BorderRadius.horizontal(left: Radius.circular(10)),
+                          borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
                           child: Image.network(
                             widget.orderDetails['orderItems'][index]['mainImageUrl'],
-                            width: 80, // Reduced the size of the image
-                            height: 80, // Reduced the size of the image
+                            width: 80,
+                            height: 80,
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -309,11 +234,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                               children: [
                                 Text(
                                   widget.orderDetails['orderItems'][index]['name'],
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
+                                  style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 4),
@@ -321,7 +242,6 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                             ),
                           ),
                         ),
-                        // Spacer for right-alignment
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Column(
@@ -329,11 +249,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                             children: [
                               Text(
                                 'x ${widget.orderDetails['orderItems'][index]['quantity']} ${widget.orderDetails['orderItems'][index]['quantifier']}',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
+                                style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
@@ -343,19 +259,17 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                   );
                 },
               ),
-              // Order Details Section
-
               if (widget.orderDetails['status'] == 'Ready') ...[
-                _buildDetailRow('Pickup Code', widget.orderDetails['pickupCode']!),
+                _buildDetailRow(context, 'Pickup Code', widget.orderDetails['pickupCode']!),
                 if (!widget.orderDetails['isPaid']) ...[
-                  _buildDetailRow('Payment', widget.orderDetails['totalPrice'].toStringAsFixed(2)),
+                  _buildDetailRow(context, 'Payment', widget.orderDetails['totalPrice'].toStringAsFixed(2)),
                 ],
               ] else if (widget.orderDetails['status'] == 'Completed') ...[
                 _buildDetailRow(
-                    'Completed At', DateFormat('yyyy-MM-dd HH:mm').format(widget.orderDetails['completedAt']!.toDate())),
+                    context, 'Completed At', DateFormat('yyyy-MM-dd HH:mm').format(widget.orderDetails['completedAt']!.toDate())),
               ] else if (widget.orderDetails['status'] == 'Cancelled') ...[
                 _buildDetailRow(
-                    'Cancelled At', DateFormat('yyyy-MM-dd HH:mm').format(widget.orderDetails['cancelledAt']!.toDate())),
+                    context, 'Cancelled At', DateFormat('yyyy-MM-dd HH:mm').format(widget.orderDetails['cancelledAt']!.toDate())),
               ],
             ],
           ),
@@ -365,7 +279,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
         elevation: 8,
         margin: EdgeInsets.zero,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -387,15 +301,14 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                               actions: [
                                 TextButton(
                                   onPressed: () {
-                                    Navigator.of(context).pop(); // Close dialog
+                                    Navigator.of(context).pop();
                                   },
                                   child: const Text('No'),
                                 ),
                                 TextButton(
                                   onPressed: () {
                                     _cancelOrder();
-
-                                    Navigator.of(context).pop(); // Close dialog
+                                    Navigator.of(context).pop();
                                   },
                                   child: const Text('Yes'),
                                 ),
@@ -405,14 +318,19 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                        foregroundColor: Theme.of(context).colorScheme.onError,
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                       ),
-                      child: const Text('Cancel Order'),
+                      child: Text(
+                        'Cancel Order',
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              color: Theme.of(context).colorScheme.onError,
+                            ),
+                      ),
                     ),
                   ],
                 ),
@@ -423,27 +341,22 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(BuildContext context, String label, String value) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: Row(
         children: [
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+            style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.black54,
-              ),
+              style: tt.bodyMedium?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
             ),
           ),
         ],

@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -75,7 +74,6 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
 
   void calculateTotalAmount() {
     totalRegular = (widget.basketItems.fold(0, (sum, item) => sum + item['batchPrice'] * item['quantity']));
-    ("Huh? ${totalRegular}");
     totalAmount = totalRegular;
   }
 
@@ -96,8 +94,6 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
     DateTime start = now.subtract(Duration(hours: now.hour, minutes: now.minute, seconds: now.second));
     DateTime end = start.add(const Duration(days: 1));
 
-    ("Start $start End $end");
-
     // Reference to the Firebase collection where orders are stored
     CollectionReference ordersRef = FirebaseFirestore.instance.collection('orders');
 
@@ -109,7 +105,6 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
 
     // Get the number of orders already made today
     int orderCount = querySnapshot.size;
-    ("what? $orderCount");
 
     // Generate the next order number by incrementing the order count
     String nextOrderNumber = (orderCount + 1).toString().padLeft(3, '0');
@@ -221,17 +216,20 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
         elevation: 0,
         toolbarHeight: 65,
-        title: const Text("Checkout", style: TextStyle(color: Colors.white, fontSize: 25.0)),
+        title: Text("Checkout", style: tt.headlineSmall?.copyWith(color: cs.onPrimary)),
         actions: [
           IconButton(
-            icon: const CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Icon(Icons.message, color: AppColors.primaryColor),
+            icon: CircleAvatar(
+              backgroundColor: cs.surface,
+              child: Icon(Icons.message, color: cs.primary),
             ),
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen()));
@@ -239,11 +237,12 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
           ),
         ],
         bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(4.0),
-            child: Container(
-              color: AppColors.lightColor,
-              height: 6.0,
-            )),
+          preferredSize: const Size.fromHeight(4.0),
+          child: Container(
+            color: cs.primary.withValues(alpha: 0.6),
+            height: 4.0,
+          ),
+        ),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,8 +254,8 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
                 CircleAvatar(
                   backgroundImage: storeImageUrl.isNotEmpty ? NetworkImage(storeImageUrl) : null,
                 ),
-                const SizedBox(width: 10),
-                Text(storeName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(width: 8),
+                Text(storeName, style: tt.titleSmall?.copyWith(color: cs.onSurface, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -266,27 +265,23 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
               children: [
                 OutlinedButton(
                   onPressed: _selectPickupDateTime,
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.primaryColor),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
-                  ),
-                  child: const Text('Pickup Time', style: TextStyle(color: AppColors.primaryColor)),
+                  child: Text('Pickup Time', style: tt.labelLarge?.copyWith(color: cs.primary)),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 if (selectedPickupDateTime != null)
                   Text(
                     DateFormat('MM/dd/yyyy | h:mm a').format(selectedPickupDateTime!),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    style: tt.bodyMedium?.copyWith(color: cs.onSurface, fontWeight: FontWeight.w500),
                   ),
               ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
               children: [
                 _buildPaymentButton('Cash'),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 _buildPaymentButton('Card'),
               ],
             ),
@@ -300,21 +295,29 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
                     children: [
-                      Image.network(item['productMainImageUrl'], width: 80, height: 80, fit: BoxFit.cover),
-                      const SizedBox(width: 10),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(item['productMainImageUrl'], width: 80, height: 80, fit: BoxFit.cover),
+                      ),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(item['productName'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                            Text('₱${item['batchPrice'].toStringAsFixed(2)} x ${item['quantity']}',
-                                style: const TextStyle(color: Colors.grey)),
+                            Text(
+                              item['productName'],
+                              style: tt.titleSmall?.copyWith(color: cs.onSurface),
+                            ),
+                            Text(
+                              '₱${item['batchPrice'].toStringAsFixed(2)} x ${item['quantity']}',
+                              style: tt.bodySmall?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
+                            ),
                           ],
                         ),
                       ),
                       Text(
                         '₱${(item['batchPrice'] * item['quantity']).toStringAsFixed(2)}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        style: tt.titleSmall?.copyWith(color: cs.onSurface, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -328,18 +331,19 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
               child: Row(
                 children: [
                   Switch(
-                      onChanged: (value) {
-                        setState(() {
-                          usePoints = !usePoints;
-                        });
-                        updateTotal();
-                      },
-                      value: usePoints,
-                      activeColor: AppColors.primaryColor),
-                  const SizedBox(width: 10),
+                    onChanged: (value) {
+                      setState(() {
+                        usePoints = !usePoints;
+                      });
+                      updateTotal();
+                    },
+                    value: usePoints,
+                    activeColor: cs.primary,
+                  ),
+                  const SizedBox(width: 8),
                   Text(
                     "Use points: -${points.toString()}.00 PHP",
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    style: tt.bodyMedium?.copyWith(color: cs.onSurface, fontWeight: FontWeight.w500),
                   )
                 ],
               ),
@@ -350,18 +354,14 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
         child: Row(
           children: [
             const Spacer(),
-            Text("Total: ₱${totalAmount.toStringAsFixed(2)}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              "Total: ₱${totalAmount.toStringAsFixed(2)}",
+              style: tt.titleMedium?.copyWith(color: cs.onSurface, fontWeight: FontWeight.bold),
+            ),
             const Spacer(),
             ElevatedButton(
               onPressed: selectedPickupDateTime == null ? null : _confirmOrder,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              ),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                child: Text("CONFIRM", style: TextStyle(fontSize: 16, color: Colors.white)),
-              ),
+              child: Text("Confirm order", style: tt.labelLarge?.copyWith(color: cs.onPrimary)),
             ),
           ],
         ),
@@ -370,18 +370,20 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
   }
 
   Widget _buildPaymentButton(String method) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     final bool isSelected = selectedPaymentMethod == method;
     return Expanded(
       child: OutlinedButton(
         onPressed: () => selectPaymentMethod(method),
         style: OutlinedButton.styleFrom(
-          backgroundColor: isSelected ? AppColors.primaryColor : Colors.transparent,
-          side: const BorderSide(color: AppColors.primaryColor),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+          backgroundColor: isSelected ? cs.primary : Colors.transparent,
+          side: BorderSide(color: cs.primary),
+          shape: const StadiumBorder(),
         ),
         child: Text(
           method,
-          style: TextStyle(color: isSelected ? Colors.white : AppColors.primaryColor),
+          style: tt.labelLarge?.copyWith(color: isSelected ? cs.onPrimary : cs.primary),
         ),
       ),
     );

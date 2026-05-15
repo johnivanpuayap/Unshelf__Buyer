@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -79,23 +78,23 @@ class _ReviewPageState extends State<ReviewPage> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
         elevation: 0,
         toolbarHeight: 65,
-        title: const Text(
+        title: Text(
           "Leave a Review",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 25,
-          ),
+          style: tt.headlineSmall?.copyWith(color: cs.onPrimary),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4.0),
           child: Container(
-            color: AppColors.lightColor,
-            height: 6.0,
+            color: cs.primary.withValues(alpha: 0.6),
+            height: 4.0,
           ),
         ),
       ),
@@ -103,7 +102,7 @@ class _ReviewPageState extends State<ReviewPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const Text('Rate the Store', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Rate the Store', style: tt.titleMedium?.copyWith(color: cs.onSurface)),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
@@ -114,7 +113,7 @@ class _ReviewPageState extends State<ReviewPage> {
                     valueListenable: _rating,
                     builder: (context, value, _) => Icon(
                       Icons.star,
-                      color: value > index ? Colors.amber : Colors.grey,
+                      color: value > index ? Colors.amber : cs.outline,
                     ),
                   ),
                 ),
@@ -124,15 +123,17 @@ class _ReviewPageState extends State<ReviewPage> {
             TextField(
               controller: _descriptionController,
               maxLength: 150,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Write a short review',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: submitReview,
-              child: const Text('Submit Review'),
+              child: Text('Submit Review', style: tt.labelLarge?.copyWith(color: cs.onPrimary)),
             ),
           ],
         ),

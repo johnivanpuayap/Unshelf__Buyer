@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -118,14 +117,15 @@ class _StoreViewState extends ConsumerState<StoreView> {
   }
 
   Widget _buildProductCarousel(List<DocumentSnapshot> products) {
+    final tt = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
           child: Text(
             "Products",
-            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+            style: tt.titleLarge,
           ),
         ),
         CarouselSlider(
@@ -171,6 +171,7 @@ class _StoreViewState extends ConsumerState<StoreView> {
   }
 
   Widget _buildBundleDealsSection() {
+    final tt = Theme.of(context).textTheme;
     return FutureBuilder<List<DocumentSnapshot>>(
       future: _fetchBundles(),
       builder: (context, snapshot) {
@@ -185,11 +186,11 @@ class _StoreViewState extends ConsumerState<StoreView> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
               child: Text(
                 "Bundle Deals",
-                style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                style: tt.titleLarge,
               ),
             ),
             CarouselSlider(
@@ -213,6 +214,9 @@ class _StoreViewState extends ConsumerState<StoreView> {
   }
 
   Widget _buildProductCard(Map<String, dynamic> data, String productId, bool isBundle, BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -234,138 +238,55 @@ class _StoreViewState extends ConsumerState<StoreView> {
             height: 120,
             width: 140,
             clipBehavior: Clip.none,
-            margin: const EdgeInsets.only(top: 10),
-            // decoration: BoxDecoration(
-            //   boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 1, offset: const Offset(0, 5))],
-            // ),
+            margin: const EdgeInsets.only(top: 8),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(14),
               child: CachedNetworkImage(
                 imageUrl: data['mainImageUrl'],
                 fit: BoxFit.cover,
               ),
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 4),
           Wrap(
             alignment: WrapAlignment.start,
             children: [
               Text(
                 data['name'],
-                style: const TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.black),
+                style: tt.titleSmall?.copyWith(color: cs.onSurface),
               ),
             ],
           ),
           if (isBundle)
             Text(
               "PHP ${data['price']!.toStringAsFixed(2)}",
-              style: const TextStyle(fontSize: 14.0, color: Colors.grey),
+              style: tt.bodySmall?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
             )
           else
             Text(
               "PHP ${minPrices[productId]!.toStringAsFixed(2)}",
-              style: const TextStyle(fontSize: 14.0, color: Colors.grey),
+              style: tt.bodySmall?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
             ),
         ],
       )),
     );
   }
 
-  // Widget _buildProductCard(Map<String, dynamic> productData, String productId, bool isBundle, BuildContext context) {
-  //   return FutureBuilder<QuerySnapshot>(
-  //     future: FirebaseFirestore.instance
-  //         .collection('batches')
-  //         .where('productId', isEqualTo: productId)
-  //         .where('isListed', isEqualTo: true)
-  //         .where('stock', isGreaterThan: 0)
-  //         .get(),
-  //     builder: (context, snapshot) {
-  //       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-  //         return const SizedBox.shrink();
-  //       }
-
-  //       var batch = snapshot.data!.docs.first; // Use the first batch as default.
-  //       var batchData = batch.data() as Map<String, dynamic>;
-
-  //       return GestureDetector(
-  //         onTap: () {
-  //           Navigator.push(
-  //             context,
-  //             MaterialPageRoute(
-  //               builder: (context) => ProductPage(productId: productId),
-  //             ),
-  //           );
-  //         },
-  //         child: Card(
-  //           shape: RoundedRectangleBorder(
-  //             borderRadius: BorderRadius.circular(15.0),
-  //             side: const BorderSide(color: Color(0xA7C957), width: 10),
-  //           ),
-  //           child: Column(
-  //             crossAxisAlignment: CrossAxisAlignment.start,
-  //             children: [
-  //               Stack(
-  //                 children: [
-  //                   CachedNetworkImage(
-  //                     imageUrl: productData['mainImageUrl'],
-  //                     height: 100,
-  //                     width: double.infinity,
-  //                     fit: BoxFit.cover,
-  //                   ),
-  //                   if (productData['discount'] != null)
-  //                     Positioned(
-  //                       top: 8,
-  //                       left: 8,
-  //                       child: Container(
-  //                         color: Colors.red,
-  //                         padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 4.0),
-  //                         child: Text(
-  //                           '${productData['discount']}% off',
-  //                           style: const TextStyle(color: Colors.white, fontSize: 12),
-  //                         ),
-  //                       ),
-  //                     ),
-  //                 ],
-  //               ),
-  //               Padding(
-  //                 padding: const EdgeInsets.all(8.0),
-  //                 child: Text(
-  //                   productData['name'],
-  //                   style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
-  //                 ),
-  //               ),
-  //               Text(
-  //                 '  PHP${batchData['price'].toStringAsFixed(2)}',
-  //                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryColor),
-  //               ),
-  //               // Text(
-  //               //   '  ${batchData['quantity']} in stock',
-  //               //   style: const TextStyle(fontSize: 12, color: Colors.grey),
-  //               // ),
-  //             ],
-  //           ),
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 30,
-        // title: const Text(
-        //   'Store View',
-        //   style: TextStyle(color: Colors.white, fontSize: 25, fontWeight: FontWeight.bold),
-        // ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
       ),
       body: Builder(
         builder: (context) {
@@ -407,8 +328,8 @@ class _StoreViewState extends ConsumerState<StoreView> {
                   children: [
                     // Store Header
                     Container(
-                      padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 10, bottom: 20.0),
-                      color: AppColors.primaryColor,
+                      padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 8, bottom: 20.0),
+                      color: cs.primary,
                       child: Row(
                         children: [
                           CircleAvatar(
@@ -421,26 +342,22 @@ class _StoreViewState extends ConsumerState<StoreView> {
                             children: [
                               Text(
                                 storeDetails.storeName,
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                                style: tt.titleMedium?.copyWith(color: cs.onPrimary),
                               ),
                               Row(
                                 children: [
                                   const Icon(Icons.star, color: Colors.amber, size: 16),
-                                  const SizedBox(
-                                    width: 5.0,
-                                  ),
+                                  const SizedBox(width: 4.0),
                                   Text(
                                     '${storeDetails.storeRating?.toDouble().toStringAsFixed(2)}',
-                                    style: const TextStyle(fontSize: 15, color: Colors.white),
+                                    style: tt.bodyMedium?.copyWith(color: cs.onPrimary),
                                   ),
-                                  const SizedBox(width: 10),
+                                  const SizedBox(width: 8),
                                   const Icon(Icons.add_reaction, color: Colors.amber, size: 16),
-                                  const SizedBox(
-                                    width: 5.0,
-                                  ),
+                                  const SizedBox(width: 4.0),
                                   Text(
                                     '${storeDetails.storeFollowers ?? 0}',
-                                    style: const TextStyle(fontSize: 15, color: Colors.white),
+                                    style: tt.bodyMedium?.copyWith(color: cs.onPrimary),
                                   ),
                                 ],
                               ),
@@ -454,7 +371,7 @@ class _StoreViewState extends ConsumerState<StoreView> {
                                 onPressed: _toggleFollow,
                                 icon: Icon(
                                   isFollowing ? Icons.favorite : Icons.favorite_border,
-                                  color: isFollowing ? Colors.yellow : Colors.white,
+                                  color: isFollowing ? Colors.amber : cs.onPrimary,
                                   size: 28,
                                 ),
                                 tooltip: isFollowing ? 'Unfollow' : 'Follow',
@@ -471,9 +388,9 @@ class _StoreViewState extends ConsumerState<StoreView> {
                                     ),
                                   );
                                 },
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.chat,
-                                  color: Colors.yellow,
+                                  color: cs.onPrimary,
                                   size: 28,
                                 ),
                                 tooltip: 'Chat',
@@ -483,18 +400,15 @@ class _StoreViewState extends ConsumerState<StoreView> {
                         ],
                       ),
                     ),
-                    PreferredSize(
-                      preferredSize: const Size.fromHeight(4.0),
-                      child: Container(
-                        color: AppColors.lightColor,
-                        height: 6.0,
-                      ),
+                    Container(
+                      color: cs.primary.withValues(alpha: 0.6),
+                      height: 4.0,
                     ),
-                    const SizedBox(height: 10.0),
+                    const SizedBox(height: 8.0),
                     // View in Maps
                     Row(
                       children: [
-                        const SizedBox(width: 10.0),
+                        const SizedBox(width: 8.0),
                         ElevatedButton.icon(
                           onPressed: () {
                             Navigator.push(
@@ -510,7 +424,7 @@ class _StoreViewState extends ConsumerState<StoreView> {
                           icon: const Icon(Icons.map),
                           label: const Text('Location'),
                         ),
-                        const SizedBox(width: 10.0),
+                        const SizedBox(width: 8.0),
                         ElevatedButton.icon(
                           onPressed: () {
                             Navigator.push(
@@ -529,56 +443,6 @@ class _StoreViewState extends ConsumerState<StoreView> {
                     ),
                     _buildProductCarousel(products),
                     _buildBundleDealsSection(),
-                    // Category Listings: Offers, Grocery, Fruits, Veggies, Baked
-                    // for (var category in ['Offers', 'Grocery', 'Fruits', 'Vegetables', 'Baked Goods'])
-                    //   StreamBuilder<QuerySnapshot>(
-                    //     stream: FirebaseFirestore.instance
-                    //         .collection('products')
-                    //         .where('sellerId', isEqualTo: widget.storeId)
-                    //         .where('category', isEqualTo: category)
-                    //         .snapshots(),
-                    //     builder: (context, snapshot) {
-                    //       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    //         return const SizedBox.shrink(); // Skip if no products
-                    //       }
-                    //       var productDocs = snapshot.data!.docs;
-                    //       return Container(
-                    //         height: 220,
-                    //         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    //         child: Column(
-                    //           crossAxisAlignment: CrossAxisAlignment.start,
-                    //           children: [
-                    //             Text(
-                    //               category.toUpperCase(),
-                    //               style: const TextStyle(
-                    //                 fontSize: 18,
-                    //                 fontWeight: FontWeight.bold,
-                    //                 color: AppColors.primaryColor,
-                    //               ),
-                    //             ),
-                    //             const SizedBox(height: 8.0),
-                    //             Expanded(
-                    //               child: ListView.builder(
-                    //                 scrollDirection: Axis.horizontal,
-                    //                 itemCount: productDocs.length,
-                    //                 itemBuilder: (context, index) {
-                    //                   var productData = productDocs[index].data() as Map<String, dynamic>;
-                    //                   var productId = productDocs[index].id;
-                    //                   var isBundle = productData['isBundle'] ?? false;
-
-                    //                   return Container(
-                    //                     width: 160,
-                    //                     margin: const EdgeInsets.symmetric(horizontal: 8.0),
-                    //                     child: _buildProductCard(productData, productId, isBundle, context),
-                    //                   );
-                    //                 },
-                    //               ),
-                    //             ),
-                    //           ],
-                    //         ),
-                    //       );
-                    //     },
-                    //   ),
                   ],
                 ),
               );

@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:unshelf_buyer/views/category_view.dart';
@@ -20,6 +19,9 @@ class _CategoryIconsRowState extends State<CategoryIconsRow> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: SingleChildScrollView(
@@ -44,10 +46,10 @@ class _CategoryIconsRowState extends State<CategoryIconsRow> {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
-                  color: _pressedIndex == index ? AppColors.primaryColor : const Color.fromARGB(255, 241, 241, 241),
+                  color: _pressedIndex == index ? cs.primary : cs.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(20.0),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                 margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10.0),
                 child: Row(
                   children: [
@@ -55,10 +57,10 @@ class _CategoryIconsRowState extends State<CategoryIconsRow> {
                     const SizedBox(width: 6.0),
                     Text(
                       category.name,
-                      style: TextStyle(
-                          fontSize: 13.0,
-                          // fontWeight: FontWeight.bold,
-                          color: _pressedIndex == index ? Colors.white : Colors.black),
+                      style: tt.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: _pressedIndex == index ? cs.onPrimary : cs.onSurface,
+                      ),
                     ),
                   ],
                 ),

@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -89,11 +88,12 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
   }
 
   Widget _buildProductCard(Map<String, dynamic> product) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Column(
       children: [
-        const SizedBox(
-          height: 20,
-        ),
+        const SizedBox(height: 16),
         GestureDetector(
           onTap: () {
             Navigator.push(
@@ -104,7 +104,7 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
             );
           },
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20),
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
             child: Row(
               children: [
                 // Product Image
@@ -112,11 +112,22 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
                   width: 90,
                   height: 90,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 5, offset: const Offset(0, 3))],
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.02),
+                        offset: const Offset(0, 1),
+                        blurRadius: 0,
+                      ),
+                      BoxShadow(
+                        color: const Color(0xFF1F2A20).withValues(alpha: 0.06),
+                        offset: const Offset(0, 8),
+                        blurRadius: 28,
+                      ),
+                    ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(14),
                     child: CachedNetworkImage(
                       imageUrl: product['mainImageUrl'] ?? '',
                       fit: BoxFit.cover,
@@ -125,7 +136,7 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 30),
+                const SizedBox(width: 24),
 
                 // Product Details
                 Expanded(
@@ -134,17 +145,17 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
                     children: [
                       Text(
                         product['name'] ?? 'No Name',
-                        style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.black),
+                        style: tt.titleSmall?.copyWith(color: cs.onSurface),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         product['minPrice'] != null ? "PHP ${product['minPrice'].toStringAsFixed(2)}" : "No price available",
-                        style: const TextStyle(fontSize: 14.0, color: Colors.black),
+                        style: tt.bodyMedium?.copyWith(color: cs.onSurface),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         product['store_name'] ?? "Unknown Store",
-                        style: const TextStyle(fontSize: 12.0, color: Colors.grey),
+                        style: tt.bodySmall?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
                       ),
                     ],
                   ),
@@ -153,13 +164,11 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
             ),
           ),
         ),
-        const SizedBox(
-          height: 15,
-        ),
+        const SizedBox(height: 16),
         Divider(
-          thickness: 0.2,
+          thickness: 0.5,
           height: 1,
-          color: Colors.grey[600],
+          color: cs.outline.withValues(alpha: 0.4),
         ),
       ],
     );
@@ -167,23 +176,23 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
         elevation: 0,
         toolbarHeight: 65,
         title: Text(
           widget.category.categoryName,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 25,
-          ),
+          style: tt.headlineSmall?.copyWith(color: cs.onPrimary),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4.0),
           child: Container(
-            color: AppColors.lightColor,
-            height: 6.0,
+            color: cs.primary.withValues(alpha: 0.6),
+            height: 4.0,
           ),
         ),
       ),
@@ -193,7 +202,7 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
               ? Center(
                   child: Text(
                     "No listed products in this category",
-                    style: TextStyle(color: Colors.grey[600], fontSize: 16.0),
+                    style: tt.bodyLarge?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
                   ),
                 )
               : ListView.builder(

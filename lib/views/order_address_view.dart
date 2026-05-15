@@ -1,5 +1,4 @@
 // views/edit_store_location_view.dart
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -12,20 +11,21 @@ class EditOrderAddressView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
         elevation: 0,
         toolbarHeight: 65,
-        title: const Text(
+        title: Text(
           'Choose a Location',
-          style: TextStyle(
-            color: Colors.white,
-          ),
+          style: tt.titleMedium?.copyWith(color: cs.onPrimary),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.save),
+            icon: Icon(Icons.save, color: cs.onPrimary),
             onPressed: () async {
               try {
                 // save location logic

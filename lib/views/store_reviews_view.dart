@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -46,18 +45,18 @@ class _StoreReviewsViewState extends State<StoreReviewsView> {
     return {'storeName': 'No Store Name', 'storeImageUrl': ''};
   }
 
-  Widget _buildProductCard(Map<String, dynamic> data, String sellerId) {
+  Widget _buildReviewCard(Map<String, dynamic> data, String sellerId) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     final ValueNotifier<int> _rating = ValueNotifier<int>(data['rating']);
 
     return Column(
       children: [
-        const SizedBox(
-          height: 20,
-        ),
+        const SizedBox(height: 16),
         GestureDetector(
           onTap: () {},
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20),
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -77,26 +76,17 @@ class _StoreReviewsViewState extends State<StoreReviewsView> {
                               valueListenable: _rating,
                               builder: (context, value, _) => Icon(
                                 Icons.star,
-                                color: value > index ? Colors.amber : Colors.grey,
+                                color: value > index ? Colors.amber : cs.outline,
                               ),
                             ),
                           ),
                         ),
                       ),
-                      // Text(
-                      //   data['name'], // Product Name
-                      //   style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.black),
-                      // ),
                       const SizedBox(height: 4),
                       Text(
                         "${data['description']}",
-                        style: const TextStyle(fontSize: 14.0, color: Colors.black),
+                        style: tt.bodyMedium?.copyWith(color: cs.onSurface),
                       ),
-                      // const SizedBox(height: 4),
-                      // Text(
-                      //   storeName ?? "Unknown Store", // Store Name
-                      //   style: const TextStyle(fontSize: 12.0, color: Colors.grey),
-                      // ),
                     ],
                   ),
                 ),
@@ -104,13 +94,11 @@ class _StoreReviewsViewState extends State<StoreReviewsView> {
             ),
           ),
         ),
-        const SizedBox(
-          height: 15,
-        ),
+        const SizedBox(height: 16),
         Divider(
-          thickness: 0.2,
+          thickness: 0.5,
           height: 1,
-          color: Colors.grey[600],
+          color: cs.outline.withValues(alpha: 0.4),
         ),
       ],
     );
@@ -118,23 +106,26 @@ class _StoreReviewsViewState extends State<StoreReviewsView> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     final reviewsRef = FirebaseFirestore.instance.collection('stores').doc(widget.storeId).collection('reviews');
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
         elevation: 0,
         toolbarHeight: 65,
-        title: const Text(
+        title: Text(
           "Reviews",
-          style: TextStyle(color: Colors.white, fontSize: 25),
+          style: tt.headlineSmall?.copyWith(color: cs.onPrimary),
         ),
         bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(4.0),
-            child: Container(
-              color: AppColors.lightColor,
-              height: 6.0,
-            )),
+          preferredSize: const Size.fromHeight(4.0),
+          child: Container(
+            color: cs.primary.withValues(alpha: 0.6),
+            height: 4.0,
+          ),
+        ),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: reviewsRef.snapshots(),
@@ -144,7 +135,12 @@ class _StoreReviewsViewState extends State<StoreReviewsView> {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("This store doesn't have any reviews yet."));
+            return Center(
+              child: Text(
+                "This store doesn't have any reviews yet.",
+                style: tt.bodyLarge?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
+              ),
+            );
           }
 
           // Extract product IDs from favorites
@@ -157,7 +153,7 @@ class _StoreReviewsViewState extends State<StoreReviewsView> {
               final reviewId = reviewDoc.id; // This is also the order ID
 
               // Use the provided card styling
-              return _buildProductCard(reviewDoc.data() as Map<String, dynamic>, reviewId);
+              return _buildReviewCard(reviewDoc.data() as Map<String, dynamic>, reviewId);
             },
           );
         },

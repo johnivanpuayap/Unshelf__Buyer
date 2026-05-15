@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -42,6 +41,9 @@ class ProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
         body: FutureBuilder<Map<String, dynamic>>(
           future: getUserData(),
@@ -74,26 +76,29 @@ class ProfileView extends StatelessWidget {
                             children: [
                               Text(
                                 userData['name'],
-                                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                style: tt.titleLarge,
                               ),
                               const SizedBox(height: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: const Color.fromARGB(255, 211, 255, 244),
+                                  color: cs.primaryContainer,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.star,
-                                      size: 20,
-                                      color: Colors.yellow,
+                                      size: 18,
+                                      color: cs.secondary,
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: 6),
                                     Text(
                                       "POINTS: ${userData['points']}",
-                                      style: const TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold),
+                                      style: tt.bodySmall?.copyWith(
+                                        color: cs.onPrimaryContainer,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -107,13 +112,11 @@ class ProfileView extends StatelessWidget {
                       child: ListView(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         children: [
-                          const SizedBox(
-                            height: 20,
-                          ),
+                          const SizedBox(height: 20),
                           const Divider(),
-                          const Text(
+                          Text(
                             "General",
-                            style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                            style: tt.titleMedium,
                           ),
                           const Divider(),
                           _buildProfileOption(context, Icons.list_alt, "Edit Profile", 1),
@@ -124,23 +127,13 @@ class ProfileView extends StatelessWidget {
                           const Divider(),
                           _buildProfileOption(context, Icons.store, "Following", 4),
                           const Divider(),
-
-                          const Text(
+                          Text(
                             "Account & Security",
-                            style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                            style: tt.titleMedium,
                           ),
                           const Divider(),
                           _buildProfileOption(context, Icons.report_problem, "Report", 5),
                           const Divider(),
-                          // const Divider(),
-                          // _buildProfileOption(context, Icons.history, "Order History", 5),
-                          // _buildProfileOption(context, Icons.subscriptions, "Subscriptions", 6),
-                          // _buildProfileOption(context, Icons.share, "Referrals", 7),
-                          // _buildProfileOption(context, Icons.card_giftcard, "Vouchers", 8),
-                          // const Divider(),
-                          // _buildProfileOption(context, Icons.help, "Help Center", 9),
-                          // _buildProfileOption(context, Icons.settings, "Settings", 10),
-                          // _buildProfileOption(context, Icons.support, "Customer Support", 11),
                           _buildProfileOption(context, Icons.logout, "Log Out", 6),
                         ],
                       ),
@@ -155,9 +148,12 @@ class ProfileView extends StatelessWidget {
   }
 
   Widget _buildProfileOption(BuildContext context, IconData icon, String title, num index) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     return ListTile(
-      leading: Icon(icon, color: AppColors.primaryColor),
-      title: Text(title),
+      leading: Icon(icon, color: cs.primary),
+      title: Text(title, style: tt.bodyLarge),
+      trailing: Icon(Icons.chevron_right, color: cs.onSurface.withValues(alpha: 0.4)),
       onTap: () {
         switch (index) {
           case 1:
