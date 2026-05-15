@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:unshelf_buyer/components/field_label.dart';
 import 'package:unshelf_buyer/authentication/views/login_view.dart';
 import 'package:unshelf_buyer/authentication/views/reset_email_sent_view.dart';
 
@@ -86,7 +87,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                             color: cs.onSurface.withValues(alpha: 0.65)),
                         textAlign: TextAlign.center),
                     const SizedBox(height: 40),
-                    _FieldLabel('Email', color: cs.onSurface),
+                    FieldLabel('Email', color: cs.onSurface),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _emailController,
@@ -146,20 +147,3 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   }
 }
 
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel(this.text, {required this.color});
-  final String text;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: color,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.3,
-          ),
-    );
-  }
-}

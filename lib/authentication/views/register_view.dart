@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:unshelf_buyer/components/field_label.dart';
 import 'package:unshelf_buyer/authentication/views/login_view.dart';
 
 class RegisterView extends StatefulWidget {
@@ -115,7 +116,7 @@ class _RegisterViewState extends State<RegisterView> {
                             color: cs.onSurface.withValues(alpha: 0.65)),
                         textAlign: TextAlign.center),
                     const SizedBox(height: 32),
-                    _FieldLabel('Full name', color: cs.onSurface),
+                    FieldLabel('Full name', color: cs.onSurface),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _nameController,
@@ -126,7 +127,7 @@ class _RegisterViewState extends State<RegisterView> {
                           (v == null || v.trim().isEmpty) ? 'Name is required' : null,
                     ),
                     const SizedBox(height: 20),
-                    _FieldLabel('Email', color: cs.onSurface),
+                    FieldLabel('Email', color: cs.onSurface),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _emailController,
@@ -142,7 +143,7 @@ class _RegisterViewState extends State<RegisterView> {
                       },
                     ),
                     const SizedBox(height: 20),
-                    _FieldLabel('Phone number', color: cs.onSurface),
+                    FieldLabel('Phone number', color: cs.onSurface),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _phoneNumberController,
@@ -161,7 +162,7 @@ class _RegisterViewState extends State<RegisterView> {
                       },
                     ),
                     const SizedBox(height: 20),
-                    _FieldLabel('Password', color: cs.onSurface),
+                    FieldLabel('Password', color: cs.onSurface),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _passwordController,
@@ -189,7 +190,7 @@ class _RegisterViewState extends State<RegisterView> {
                       },
                     ),
                     const SizedBox(height: 20),
-                    _FieldLabel('Confirm password', color: cs.onSurface),
+                    FieldLabel('Confirm password', color: cs.onSurface),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _confirmPasswordController,
@@ -267,20 +268,3 @@ class _RegisterViewState extends State<RegisterView> {
   }
 }
 
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel(this.text, {required this.color});
-  final String text;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: color,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.3,
-          ),
-    );
-  }
-}
