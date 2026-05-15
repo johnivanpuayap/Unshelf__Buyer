@@ -1,85 +1,26 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:unshelf_buyer/views/store_view.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:unshelf_buyer/components/empty_state_view.dart';
+import 'package:unshelf_buyer/components/store_card.dart';
 
 class FollowingView extends StatelessWidget {
   const FollowingView({super.key});
 
-  Future<void> _removeFromFollowing(String storeId) async {
+  Future<void> _unfollow(BuildContext context, String storeId) async {
     final userId = FirebaseAuth.instance.currentUser!.uid;
-    final followingRef = FirebaseFirestore.instance.collection('users').doc(userId).collection('following').doc(storeId);
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('following')
+        .doc(storeId)
+        .delete();
 
-    await followingRef.delete();
-  }
-
-  Widget _buildStoreCard(Map<String, dynamic> data, String storeId, BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return Column(
-      children: [
-        const SizedBox(height: 16),
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (BuildContext context, Animation<double> animation1, Animation<double> animation2) {
-                  return StoreView(storeId: storeId);
-                },
-                transitionDuration: Duration.zero,
-                reverseTransitionDuration: Duration.zero,
-              ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: CachedNetworkImage(
-                    imageUrl: data['store_image_url'],
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => const CircularProgressIndicator(),
-                    errorWidget: (context, url, error) => const Icon(Icons.error),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        data['store_name'],
-                        style: tt.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.favorite, color: cs.primary),
-                  onPressed: () {
-                    _removeFromFollowing(storeId);
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text('Successfully removed from following list.'),
-                    ));
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Divider(height: 1, thickness: 0.5, color: cs.outline),
-      ],
-    );
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Removed from following')),
+      );
+    }
   }
 
   @override
@@ -87,21 +28,15 @@ class FollowingView extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final userId = FirebaseAuth.instance.currentUser!.uid;
-    final followingRef = FirebaseFirestore.instance.collection('users').doc(userId).collection('following');
+    final followingRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('following');
 
     return Scaffold(
+      backgroundColor: cs.surface,
       appBar: AppBar(
-        backgroundColor: cs.primary,
-        elevation: 0,
-        toolbarHeight: 65,
-        title: Text(
-          "Following",
-          style: tt.titleLarge?.copyWith(color: cs.onPrimary),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(4.0),
-          child: Container(color: cs.secondary, height: 4.0),
-        ),
+        title: Text('Following', style: tt.titleLarge),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: followingRef.snapshots(),
@@ -111,38 +46,101 @@ class FollowingView extends StatelessWidget {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(
-              child: Text(
-                "You aren't following any stores.",
-                style: tt.bodyLarge?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
+            return const Center(
+              child: EmptyStateView(
+                icon: Icons.storefront_outlined,
+                headline: 'Not following any stores yet',
+                body:
+                    'Tap the follow button on any store to follow it.',
               ),
             );
           }
 
-          return ListView.builder(
-            itemCount: snapshot.data!.docs.length,
+          final storeDocs = snapshot.data!.docs;
+
+          return ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            itemCount: storeDocs.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
-              final followingDoc = snapshot.data!.docs[index];
-              final storeId = followingDoc.id;
+              final storeId = storeDocs[index].id;
 
               return FutureBuilder<DocumentSnapshot>(
-                future: FirebaseFirestore.instance.collection('stores').doc(storeId).get(),
-                builder: (context, storeSnapshot) {
-                  if (storeSnapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+                future: FirebaseFirestore.instance
+                    .collection('stores')
+                    .doc(storeId)
+                    .get(),
+                builder: (context, storeSnap) {
+                  if (storeSnap.connectionState ==
+                      ConnectionState.waiting) {
+                    return _StoreCardSkeleton(cs: cs);
                   }
 
-                  if (!storeSnapshot.hasData || !storeSnapshot.data!.exists) {
+                  if (!storeSnap.hasData ||
+                      !storeSnap.data!.exists) {
                     return const SizedBox.shrink();
                   }
 
-                  final storeData = storeSnapshot.data!;
-                  return _buildStoreCard(storeData.data() as Map<String, dynamic>, storeId, context);
+                  final data =
+                      storeSnap.data!.data() as Map<String, dynamic>;
+                  final storeName =
+                      (data['store_name'] as String?) ?? 'Unknown store';
+                  final imageUrl = data['store_image_url'] as String?;
+                  final rating = (data['rating'] as num?)?.toDouble();
+                  final followers =
+                      (data['follower_count'] as num?)?.toInt();
+
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: StoreCard(
+                          storeId: storeId,
+                          storeName: storeName,
+                          storeImageUrl: imageUrl,
+                          rating: rating,
+                          followerCount: followers,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Unfollow button
+                      OutlinedButton(
+                        onPressed: () => _unfollow(context, storeId),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          side: BorderSide(
+                              color: cs.outline.withValues(alpha: 0.4)),
+                        ),
+                        child: Text(
+                          'Unfollow',
+                          style: Theme.of(context).textTheme.labelMedium,
+                        ),
+                      ),
+                    ],
+                  );
                 },
               );
             },
           );
         },
+      ),
+    );
+  }
+}
+
+class _StoreCardSkeleton extends StatelessWidget {
+  const _StoreCardSkeleton({required this.cs});
+  final ColorScheme cs;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 80,
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(14),
       ),
     );
   }
