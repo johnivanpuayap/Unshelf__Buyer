@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:unshelf_buyer/viewmodels/order_viewmodel.dart';
 import 'package:unshelf_buyer/viewmodels/store_viewmodel.dart';
 import 'package:unshelf_buyer/views/home_view.dart';
-import 'package:unshelf_buyer/views/login_view.dart';
+import 'package:unshelf_buyer/authentication/views/login_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

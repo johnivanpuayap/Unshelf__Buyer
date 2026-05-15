@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:unshelf_buyer/services/chat_service.dart';
-import 'package:unshelf_buyer/widgets/chat_bubble.dart';
-import 'package:unshelf_buyer/widgets/my_textfield.dart';
+import 'package:unshelf_buyer/components/chat_bubble.dart';
+import 'package:unshelf_buyer/components/my_textfield.dart';
 
 class ChatView extends StatefulWidget {
   final String receiverName;

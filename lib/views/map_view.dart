@@ -9,7 +9,7 @@ import 'package:unshelf_buyer/views/profile_view.dart';
 import 'package:unshelf_buyer/views/store_view.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:unshelf_buyer/widgets/custom_navigation_bar.dart';
+import 'package:unshelf_buyer/components/custom_navigation_bar.dart';
 
 class MapPage extends StatefulWidget {
   @override

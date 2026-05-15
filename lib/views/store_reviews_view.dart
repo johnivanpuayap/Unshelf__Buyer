@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:unshelf_buyer/views/store_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:unshelf_buyer/widgets/custom_navigation_bar.dart';
+import 'package:unshelf_buyer/components/custom_navigation_bar.dart';
 
 class StoreReviewsView extends StatefulWidget {
   final String storeId;
