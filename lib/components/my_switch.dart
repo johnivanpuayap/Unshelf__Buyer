@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 
 class SwitchToggle extends StatefulWidget {
@@ -15,12 +14,12 @@ class _SwitchToggleState extends State<SwitchToggle> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Switch(
-      // This bool value toggles the switch.
       value: isToggled,
-      activeColor: AppColors.primaryColor,
+      activeColor: cs.primary,
       onChanged: (bool value) {
-        // This is called when the user toggles the switch.
         setState(() {
           isToggled = value;
         });

@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 
 class ChatBubble extends StatelessWidget {
@@ -13,17 +12,23 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color bubbleColor = (type == 'sender') ? AppColors.primaryColor : const Color.fromARGB(255, 226, 226, 226);
-    final Color textColor = (type == 'sender') ? Colors.white : Colors.black;
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    final isSender = type == 'sender';
+    final bubbleColor = isSender ? cs.primary : cs.surfaceContainerHighest;
+    final textColor = isSender ? cs.onPrimary : cs.onSurface;
+
     return Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          color: bubbleColor,
-        ),
-        child: Text(
-          message,
-          style: TextStyle(fontSize: 16, color: textColor),
-        ));
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: bubbleColor,
+      ),
+      child: Text(
+        message,
+        style: tt.bodyMedium?.copyWith(color: textColor),
+      ),
+    );
   }
 }
