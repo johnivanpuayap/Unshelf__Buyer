@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -36,26 +35,27 @@ class _ChatViewState extends State<ChatView> with AutomaticKeepAliveClientMixin 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
         elevation: 0,
         toolbarHeight: 65,
         title: Text(
           widget.receiverName,
-          style: const TextStyle(color: Colors.white, fontSize: 25.0),
+          style: tt.titleLarge?.copyWith(color: cs.onPrimary),
         ),
         bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(4.0),
-            child: Container(
-              color: AppColors.lightColor,
-              height: 6.0,
-            )),
+          preferredSize: const Size.fromHeight(4.0),
+          child: Container(color: cs.secondary, height: 4.0),
+        ),
       ),
       body: Column(
         children: [
           Expanded(child: _buildMessageList()),
-          _buildMessageInput(),
+          _buildMessageInput(cs),
           const SizedBox(height: 25),
         ],
       ),
@@ -96,7 +96,6 @@ class _ChatViewState extends State<ChatView> with AutomaticKeepAliveClientMixin 
           mainAxisAlignment:
               (data['senderId'] == _firebaseAuth.currentUser!.uid) ? MainAxisAlignment.end : MainAxisAlignment.start,
           children: [
-            // Text(widget.receiverName),
             const SizedBox(height: 5),
             (data['senderId'] == _firebaseAuth.currentUser!.uid)
                 ? ChatBubble(message: data['message'], type: 'sender')
@@ -107,7 +106,7 @@ class _ChatViewState extends State<ChatView> with AutomaticKeepAliveClientMixin 
     );
   }
 
-  Widget _buildMessageInput() {
+  Widget _buildMessageInput(colorScheme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 1.0),
       child: Row(
@@ -122,10 +121,10 @@ class _ChatViewState extends State<ChatView> with AutomaticKeepAliveClientMixin 
           IconButton(
             padding: EdgeInsets.zero,
             onPressed: sendMessage,
-            icon: const Icon(
+            icon: Icon(
               Icons.send,
               size: 30,
-              color: AppColors.primaryColor,
+              color: colorScheme.primary,
             ),
           ),
         ],
