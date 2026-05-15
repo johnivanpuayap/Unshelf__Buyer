@@ -7,11 +7,19 @@
 
 ## Context
 
-The Unshelf buyer app is an existing Flutter mobile app that lets users in Cebu shop near-expiry food from local stores. It has ~30 screens, 13 viewmodels using ad-hoc `Provider` state management, Google Maps for store locations, and Firebase as the backend. There is essentially **zero** automated test coverage (just the default Flutter scaffold test).
+The Unshelf buyer app is an existing Flutter mobile app that lets users in Cebu shop near-expiry food from local stores. It has 27 view files, 13 viewmodels, Firebase as the backend, and recent restructuring that aligned its folder layout with the seller app.
 
-This sub-project applies the **Unshelf brand kit** (sub-project 1, shipped 2026-05-15) to the buyer app, and lands two foundational tech-stack migrations that have to happen before release: state management to **Riverpod 2.x** and maps to **flutter_map + OpenStreetMap + Nominatim**.
+**Current state (as of 2026-05-16, after pulling 30 commits):**
 
-Other work — payments cleanup (Stripe → PayMongo), full test coverage, store submission polish — is deferred to dedicated sub-projects.
+- `lib/` structure: `authentication/views/` (login + register), `views/` (27 screens), `viewmodels/` (13), `data/repositories/` (auth, product, storage, user + `firebase/` clients), `components/` (6 widgets), `services/` (chat + paymongo), `models/`, `utils/colors.dart` (centralized teal-based palette `#0AB68B` — pre-brand-kit).
+- State management: `provider` package, `ChangeNotifierProvider` + `MultiProvider` in `main.dart`.
+- Maps: `google_maps_flutter` AND `flutter_map` BOTH in pubspec — migration started, not finished. Goal: drop `google_maps_flutter`, finish on `flutter_map` + OSM tiles + Nominatim.
+- Existing tests: 7 viewmodel tests under `test/viewmodels/` (address, dashboard, home, order_address, settings, user_profile, wallet) — preserve these through migration.
+- Recent merges: regression testing waves, structural alignment with seller, viewmodel renames (`AddressViewmodel` → `AddressViewModel`), stock counter-widget test dropped, colors extracted to `lib/utils/colors.dart`.
+
+This sub-project applies the **Unshelf brand kit** (sub-project 1, shipped 2026-05-15) to the buyer app and lands two foundational tech-stack migrations: state management to **Riverpod 2.x** and maps consolidation to **flutter_map + OSM + Nominatim** (removing `google_maps_flutter`).
+
+Other work — payments cleanup (Stripe → PayMongo), additional test coverage, store submission polish — is deferred to dedicated sub-projects.
 
 ## Scope
 
@@ -48,18 +56,22 @@ The work is sequenced into 4 phases. Each phase ends at a green state: app build
 
 ### Phase 1 — Foundation
 
-Sets up the brand kit consumption and Riverpod plumbing without touching screen logic.
+Branch: `phase/1-foundation`
+
+Sets up the brand kit consumption and Riverpod plumbing without touching screen logic. Replaces the existing `lib/utils/colors.dart` palette with brand-kit-driven theme.
 
 - Add `unshelf-brand-kit` as a Git submodule at `brand-kit/`
-- Copy or symlink `brand-kit/tokens/tokens.dart` into `lib/theme/tokens.dart`
+- Copy `brand-kit/tokens/tokens.dart` into `lib/theme/tokens.dart` (or symlink if filesystem supports)
 - Build `lib/theme/unshelf_theme.dart` exposing `UnshelfTheme.light()` and `UnshelfTheme.dark()` — wraps `UnshelfTokens` constants into Flutter `ThemeData` (color scheme, text theme, button themes, input decoration, etc.)
+- **Remove `lib/utils/colors.dart`** OR convert it to a deprecation shim that re-exports the closest brand tokens (decide based on how many files import it — grep first; if <5, delete and update call sites; if more, deprecate-then-remove in the screen retheme phase)
 - Copy logo SVGs from `brand-kit/docs/crucible/logos/` into `assets/images/logos/`
-- Wire DM Serif Display + DM Sans through `google_fonts` package (already in pubspec)
+- Wire DM Serif Display + DM Sans through the existing `google_fonts: ^6.2.1` package
 - Add `flutter_riverpod`, `riverpod_annotation`, `riverpod_generator` (dev), `build_runner` (dev) to `pubspec.yaml`
 - Wrap `runApp` in `ProviderScope(...)` — leave `MultiProvider` inside as a child so existing viewmodels keep working until phase 2 migrates them
-- Add `CLAUDE.md` documenting the project context and locked decisions (per user preference)
+- Add `CLAUDE.md` at repo root documenting locked decisions + submodule init step (per user preference)
+- Open PR `phase/1-foundation` → `main` via `gh pr create` when exit criteria met
 
-**Exit criteria:** `flutter pub get` succeeds, app builds, theme applied to MaterialApp, app boots without errors.
+**Exit criteria:** `flutter pub get` succeeds, app builds, theme applied to MaterialApp, app boots without errors, the 7 existing viewmodel tests still pass under `flutter test`.
 
 ### Phase 2 — Riverpod migration
 
@@ -86,8 +98,9 @@ After all 13 are migrated:
 - Remove `MultiProvider` wrapper from `main.dart`
 - Remove `provider` package from `pubspec.yaml`
 - Run `flutter pub get` to clean up
+- Open PR `phase/2-riverpod-migration` → `main`
 
-**Exit criteria:** zero `ChangeNotifierProvider` references, `provider` package not in pubspec, app builds + runs.
+**Exit criteria:** zero `ChangeNotifierProvider` references, `provider` package not in pubspec, app builds + runs, all 7 ported tests + any new abstraction tests pass.
 
 ### Phase 3 — Screen retheme (medium polish)
 
@@ -123,12 +136,13 @@ Replaces Google Maps with OSM + Nominatim across the buyer app.
 
 ## Testing approach
 
-Per the deferred-tests decision, this sub-project adds tests **only** for:
+Per the deferred-tests decision, this sub-project's test work is constrained to:
 
-1. **Bug fixes during the rebrand** — any bug found mid-flight gets a regression test before the fix.
-2. **New abstractions with non-obvious contracts** — specifically:
-   - `NominatimService.search()` and `reverseGeocode()` — test the rate limiter behavior (a burst of 5 requests resolves in ~5 seconds, not <1)
-   - `UnshelfTheme.light()` / `.dark()` — smoke test that key tokens (primary, surface, foreground) match `UnshelfTokens.*` values
+1. **Preservation** — the 7 existing viewmodel tests in `test/viewmodels/` must remain green throughout. Port them to Riverpod testing patterns (`ProviderContainer` + `overrideWith`) in phase 2 as part of each viewmodel's migration commit.
+2. **Bug fixes during the rebrand** — any bug found mid-flight gets a regression test before the fix.
+3. **New abstractions with non-obvious contracts** — specifically:
+   - `NominatimService.search()` and `reverseGeocode()` — rate limiter behavior (burst of 5 resolves in ~5 seconds, not <1)
+   - `UnshelfTheme.light()` / `.dark()` — smoke test that key tokens (primary, surface, foreground) map to expected `UnshelfTokens.*` values
 
 Broad widget/integration test coverage is the dedicated test-coverage sub-project, not this one.
 
@@ -138,14 +152,17 @@ The buyer rebrand sub-project is done when:
 
 1. ⬜ `brand-kit/` Git submodule installed and tracked
 2. ⬜ `lib/theme/unshelf_theme.dart` exposes `UnshelfTheme.light()` and `UnshelfTheme.dark()` driven by `UnshelfTokens`
-3. ⬜ `flutter pub get` succeeds with `flutter_riverpod` + map deps; `provider` and `google_maps_flutter` removed
-4. ⬜ App boots under `ProviderScope` with no runtime errors
-5. ⬜ No hardcoded colors or fonts in screen-level code — grep `Color(0x` and `TextStyle(fontFamily:` returns zero hits in `lib/views/` and `lib/widgets/`
-6. ⬜ Logo + app icon + splash use Abundance Basket SVGs
-7. ⬜ Zero `ChangeNotifierProvider` references remain
-8. ⬜ Map view renders OSM tiles; address search routes through Nominatim with the rate limiter
-9. ⬜ App runs end-to-end on Android emulator AND iOS simulator (manual smoke test of: login → browse → product detail → add to basket → checkout → order history → map)
-10. ⬜ `CLAUDE.md` exists in the buyer repo with locked decisions
+3. ⬜ `lib/utils/colors.dart` retired (deleted or empty deprecation shim)
+4. ⬜ `flutter pub get` succeeds; `provider` and `google_maps_flutter` removed; `flutter_riverpod` added
+5. ⬜ App boots under `ProviderScope` with no runtime errors
+6. ⬜ No hardcoded colors or fonts in screen-level code — grep `Color(0x` and `TextStyle(fontFamily:` returns zero hits in `lib/views/`, `lib/authentication/`, and `lib/components/`
+7. ⬜ Logo + app icon + splash use Abundance Basket SVGs
+8. ⬜ Zero `ChangeNotifierProvider` references remain
+9. ⬜ All 13 viewmodels are Riverpod providers; the 7 existing viewmodel tests pass on Riverpod patterns
+10. ⬜ Map view renders OSM tiles; address search routes through `NominatimService` with rate limiting + OSM attribution
+11. ⬜ App runs end-to-end on Android emulator AND iOS simulator (manual smoke test of: login → browse → product detail → add to basket → checkout → order history → map)
+12. ⬜ `CLAUDE.md` exists at repo root with locked decisions
+13. ⬜ All four phase branches merged into `main` via PR
 
 ## Out of scope (for sub-project 3)
 
