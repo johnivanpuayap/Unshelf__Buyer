@@ -28,9 +28,39 @@ Auth screens are also being treated as a **shared component** between buyer and 
 - Payments cleanup (Stripe → PayMongo) — own sub-project
 - Comprehensive test coverage — own sub-project
 - Store-submission polish (real app icon export, splash, store listings) — own sub-project
-- Seller app — its own sub-project, will duplicate the auth spec + apply same redesign discipline later
+- Seller app — its own sub-project. **The seller app is intentionally NOT going to share most UI with the buyer.** See "Uniqueness rule" below.
 - Backend / Firestore schema changes
 - Performance optimization beyond what falls out naturally from cleaner widget trees
+
+## Uniqueness rule (applies to this AND the seller sub-project)
+
+Buyer and seller apps share **brand identity** (palette, typography, logo, Soft Editorial principles, copy voice rules) but are intentionally **visually + structurally distinct** from each other.
+
+**Shared between buyer and seller — must stay identical:**
+
+- Brand tokens (via brand-kit submodule)
+- Logo assets (via brand-kit submodule)
+- Full auth flow per `brand-kit/docs/crucible/auth-screens.md`:
+  - Sign in
+  - Sign up / register
+  - Forgot password (request + confirmation)
+  - Reset password (if/when in-app)
+  - Verify email (if/when implemented)
+- Soft Editorial principles (applied independently — same RULES, not same widgets)
+- Copy voice rules (applied independently)
+
+**NOT shared:**
+
+- Home / dashboard (buyer = marketplace; seller = inventory + orders)
+- Navigation structure (each app picks what fits its user)
+- Product screens (buyer browses; seller manages)
+- Order screens (different perspectives)
+- Profile / settings (different fields)
+- Component implementations (`ProductCard` in buyer is shopper-facing; the seller's equivalent is inventory-facing — they are different components, not a shared one)
+
+**For this sub-project:** do not build any `lib/components/` widget with seller-shareability in mind. Build for the buyer's use case. The seller will get its own components when its sub-project happens — sharing brand TOKENS, not WIDGETS.
+
+This rule is captured in memory `[[unshelf-buyer-seller-uniqueness]]`. If a future session tries to lift buyer code into a shared package or vice versa, flag and revert.
 
 ## Concept summary
 
@@ -56,14 +86,18 @@ Auth screens are also being treated as a **shared component** between buyer and 
 
 Order is roughly "most-visible first" so progress is felt early. Each group is one PR.
 
-### Group A — Auth (confirm + ship)
+### Group A — Auth (full flow + ship)
 
-The auth screens were redesigned in PR #13 (commits `9ec0f3d`, `f8fa8b5`) and set the quality bar. This group verifies the merge state on `main`, fixes any drift, and locks them in.
+PR #13 was closed without merge — its work is now subsumed into this group. Group A implements the **full auth flow** to match `brand-kit/docs/crucible/auth-screens.md`:
 
-- Confirm `lib/authentication/views/login_view.dart` matches `brand-kit/docs/crucible/auth-screens.md`
-- Confirm `lib/authentication/views/register_view.dart` matches the spec
-- Confirm `assets/images/logos/logo.svg` and `logo-icon.svg` use inline fills (not CSS classes)
-- Confirm `lib/theme/unshelf_theme.dart` has the refined `InputDecorationTheme`
+- `lib/authentication/views/login_view.dart` — rebuild per spec
+- `lib/authentication/views/register_view.dart` — rebuild per spec
+- `lib/authentication/views/forgot_password_view.dart` — **NEW** (request screen)
+- `lib/authentication/views/reset_email_sent_view.dart` — **NEW** (confirmation screen)
+- `assets/images/logos/logo.svg` and `logo-icon.svg` — rewrite with inline fills (no CSS classes); `flutter_svg` can't reliably resolve `<style>` + `class=""`
+- `lib/theme/unshelf_theme.dart` — refine `InputDecorationTheme` per spec (16/16 padding, hint @ 45%, floating label in primary, 12px radius @ 1.2 weight, error border)
+
+**The auth spec is the contract.** When the seller's sub-project happens, the seller implements the same four screens to the same spec — same layout, same copy, same behavior. Only differences allowed: role check (`type == 'seller'` vs `'buyer'`), after-login route, and the extra "Store name" field on the seller's register screen (documented in the auth spec).
 
 ### Group B — Home + dashboard
 
