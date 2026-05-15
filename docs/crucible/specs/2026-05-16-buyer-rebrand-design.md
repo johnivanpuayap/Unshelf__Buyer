@@ -75,7 +75,11 @@ Sets up the brand kit consumption and Riverpod plumbing without touching screen 
 
 ### Phase 2 — Riverpod migration
 
+Branch: `phase/2-riverpod-migration`
+
 Migrates all 13 viewmodels in one focused sweep. One commit per viewmodel.
+
+**Test preservation:** The 7 existing viewmodel tests in `test/viewmodels/` (address, dashboard, home, order_address, settings, user_profile, wallet) must be ported to Riverpod testing patterns (`ProviderContainer` + `overrideWith` for fakes) as part of each viewmodel's migration. Tests must remain green after each migration commit.
 
 Viewmodels to migrate (current file → target provider):
 - `home_view_model.dart` → `homeViewModelProvider`
@@ -104,35 +108,43 @@ After all 13 are migrated:
 
 ### Phase 3 — Screen retheme (medium polish)
 
-Reviewed screen-by-screen. For each of the 30 view files:
+Branch: `phase/3-screen-retheme`
+
+Reviewed screen-by-screen. Scope: 27 view files (`lib/views/`) + 2 auth views (`lib/authentication/views/`) + 6 components (`lib/components/`).
 
 - Replace hardcoded colors with `Theme.of(context).colorScheme.*` or direct `UnshelfTokens.*` references
 - Replace hardcoded fonts with `Theme.of(context).textTheme.*`
-- Normalize spacing to the 16/20/24px scale from `design.md`
+- Normalize spacing to the 16/20/24px scale from `brand-kit/docs/crucible/design.md`
 - Swap CTAs to plain transactional copy ("Buy now", "Add to basket", "View details" — NEVER "Rescue", "Save", "Snag")
-- Replace ad-hoc widgets with brand-kit-aligned versions when the existing one is poor; preserve layout otherwise
+- Replace ad-hoc components with brand-kit-aligned versions when the existing one is poor; preserve layout otherwise
 - Apply Soft Editorial principles: pill buttons, 14px card corners, two-layer shadows, no glassmorphism, no pure-white surfaces
+- If `lib/utils/colors.dart` was kept as a shim in phase 1, fully retire it here once all callers point at `Theme.of(context).colorScheme.*`
 
-One commit per screen (or per small related group, e.g. "auth screens"). Each commit should leave the app buildable.
+One commit per screen (or per small related group, e.g. "auth screens", "order flow"). Each commit should leave the app buildable. Open PR `phase/3-screen-retheme` → `main` at exit.
 
 **Exit criteria:** every screen reads visually as Unshelf — verified by manual smoke test of every navigation path. No hardcoded colors/fonts in screen-level code.
 
 ### Phase 4 — Maps swap
 
-Replaces Google Maps with OSM + Nominatim across the buyer app.
+Branch: `phase/4-maps-swap`
 
-- Remove `google_maps_flutter` from pubspec
-- Add `flutter_map`, `latlong2`, `geolocator`
-- Reimplement `lib/views/map_view.dart` using `FlutterMap` with `TileLayer` pointed at `https://tile.openstreetmap.org/{z}/{x}/{y}.png` (with proper attribution per OSM tile usage policy)
+`flutter_map: ^7.0.2` and `flutter_map_location_marker: ^9.0.0` are already in pubspec from prior work. This phase **finishes** the migration: ensures every map consumer uses `flutter_map`, removes `google_maps_flutter`, and adds Nominatim for geocoding.
+
+- Add `latlong2`, `geolocator` if not already present
+- Audit `lib/views/map_view.dart` — confirm it uses `FlutterMap` with `TileLayer` pointed at `https://tile.openstreetmap.org/{z}/{x}/{y}.png` and proper attribution per OSM tile usage policy
 - Build `lib/services/nominatim_service.dart`:
   - `search(query)` for autocomplete / address search
   - `reverseGeocode(lat, lng)` for "what's here"
   - Internal rate limiter: max 1 request per second, with a small queue
-  - Proper User-Agent header per Nominatim usage policy
-- Migrate `store_address_view.dart` and any other map-using screen
-- Remove Google Maps API key from `.env`/Info.plist/Android manifest
+  - 300ms debounce helper for search-as-you-type consumers
+  - Proper `User-Agent: Unshelf-Buyer/<version>` header per Nominatim usage policy
+  - Test: a burst of 5 search() calls resolves in ~5 seconds (locks the rate limiter contract)
+- Audit `store_address_view.dart` and any other map consumers — make sure they go through `flutter_map`
+- Remove `google_maps_flutter` from pubspec
+- Remove Google Maps API key from `.env`, `ios/Runner/Info.plist`, `android/app/src/main/AndroidManifest.xml`
+- Open PR `phase/4-maps-swap` → `main` at exit
 
-**Exit criteria:** zero references to `google_maps_flutter` in code or pubspec, map renders OSM tiles, search routes through Nominatim with rate limiting, OSM attribution visible on map screen.
+**Exit criteria:** zero references to `google_maps_flutter` in code or pubspec, map renders OSM tiles, search routes through `NominatimService` with rate limiting + OSM attribution visible, all tests pass.
 
 ## Testing approach
 
