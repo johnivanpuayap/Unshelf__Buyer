@@ -1,27 +1,27 @@
-import 'package:flutter/material.dart';
-import '../models/settings_model.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:unshelf_buyer/models/settings_model.dart';
 
-class SettingsViewModel extends ChangeNotifier {
-  SettingsModel _settings = SettingsModel(
-    notificationsEnabled: true,
-    language: 'English',
-  );
+part 'settings_viewmodel.g.dart';
 
-  SettingsModel get settings => _settings;
+@riverpod
+class SettingsViewModel extends _$SettingsViewModel {
+  @override
+  SettingsModel build() => SettingsModel(
+        notificationsEnabled: true,
+        language: 'English',
+      );
 
   void toggleNotifications(bool value) {
-    _settings = SettingsModel(
+    state = SettingsModel(
       notificationsEnabled: value,
-      language: _settings.language,
+      language: state.language,
     );
-    notifyListeners();
   }
 
   void changeLanguage(String newLanguage) {
-    _settings = SettingsModel(
-      notificationsEnabled: _settings.notificationsEnabled,
+    state = SettingsModel(
+      notificationsEnabled: state.notificationsEnabled,
       language: newLanguage,
     );
-    notifyListeners();
   }
 }

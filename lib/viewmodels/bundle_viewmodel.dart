@@ -1,123 +1,173 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:unshelf_buyer/models/bundle_model.dart';
 import 'package:unshelf_buyer/models/product_model.dart';
 
-class BundleViewModel extends ChangeNotifier {
-  final TextEditingController bundleNameController = TextEditingController();
-  final TextEditingController bundlePriceController = TextEditingController();
-  final TextEditingController bundleStockController = TextEditingController();
-  final TextEditingController bundleDiscountController = TextEditingController();
-  final formKey = GlobalKey<FormState>();
+part 'bundle_viewmodel.g.dart';
+
+class BundleState {
+  BundleState({
+    this.products = const [],
+    Set<String>? selectedProductIds,
+    this.maxStock = 0,
+    this.mainImageData,
+    this.suggestions = const [],
+    this.bundleName = '',
+    this.bundlePrice = '',
+    this.bundleStock = '',
+    this.bundleDiscount = '',
+  }) : selectedProductIds = selectedProductIds ?? {};
+
+  final List<ProductModel> products;
+  final Set<String> selectedProductIds;
+  final int maxStock;
+  final Uint8List? mainImageData;
+  final List<BundleModel> suggestions;
+  final String bundleName;
+  final String bundlePrice;
+  final String bundleStock;
+  final String bundleDiscount;
+
+  BundleState copyWith({
+    List<ProductModel>? products,
+    Set<String>? selectedProductIds,
+    int? maxStock,
+    Uint8List? mainImageData,
+    bool clearMainImage = false,
+    List<BundleModel>? suggestions,
+    String? bundleName,
+    String? bundlePrice,
+    String? bundleStock,
+    String? bundleDiscount,
+  }) {
+    return BundleState(
+      products: products ?? this.products,
+      selectedProductIds: selectedProductIds ?? this.selectedProductIds,
+      maxStock: maxStock ?? this.maxStock,
+      mainImageData: clearMainImage ? null : mainImageData ?? this.mainImageData,
+      suggestions: suggestions ?? this.suggestions,
+      bundleName: bundleName ?? this.bundleName,
+      bundlePrice: bundlePrice ?? this.bundlePrice,
+      bundleStock: bundleStock ?? this.bundleStock,
+      bundleDiscount: bundleDiscount ?? this.bundleDiscount,
+    );
+  }
+}
+
+@riverpod
+class BundleViewModel extends _$BundleViewModel {
   final ImagePicker _picker = ImagePicker();
-
-  List<ProductModel> _products = [];
-  Set<String> _selectedProductIds = {};
-  int _maxStock = 0;
-
-  List<ProductModel> get products => _products;
-  Set<String> get selectedProductIds => _selectedProductIds;
-  int get maxStock => _maxStock;
-
-  Uint8List? _mainImageData;
-  Uint8List? get mainImageData => _mainImageData;
-
-  List<BundleModel> _suggestions = [];
-  List<BundleModel> get suggestions => _suggestions;
-
   Future<void>? _fetchSuggestionsFuture;
 
-  BundleViewModel() {
-    _fetchProducts();
-  }
-
-  void initializeControllers(BundleModel bundle) {
-    bundleNameController.text = bundle.name;
-    bundlePriceController.text = bundle.price.toString();
-    bundleStockController.text = bundle.stock.toString();
-    bundleDiscountController.text = bundle.discount.toString();
-
-    _selectedProductIds = bundle.productIds.toSet();
-    _updateBundleStock();
+  @override
+  BundleState build() {
+    Future.microtask(_fetchProducts);
+    return BundleState();
   }
 
   Future<void> _fetchProducts() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final productSnapshot =
-          await FirebaseFirestore.instance.collection('products').where('sellerId', isEqualTo: user.uid).get();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-      _products = productSnapshot.docs.map((doc) => ProductModel.fromSnapshot(doc)).toList();
+    final snapshot = await FirebaseFirestore.instance
+        .collection('products')
+        .where('sellerId', isEqualTo: user.uid)
+        .get();
 
-      print('Products: $_products');
-      notifyListeners();
-    }
+    final products = snapshot.docs.map((doc) => ProductModel.fromSnapshot(doc)).toList();
+    debugPrint('Products: $products');
+    state = state.copyWith(products: products);
+  }
+
+  void initializeFromBundle(BundleModel bundle) {
+    final selected = bundle.productIds.toSet();
+    state = state.copyWith(
+      bundleName: bundle.name,
+      bundlePrice: bundle.price.toString(),
+      bundleStock: bundle.stock.toString(),
+      bundleDiscount: bundle.discount.toString(),
+      selectedProductIds: selected,
+    );
+    _updateBundleStock(selected);
+  }
+
+  void updateField({
+    String? bundleName,
+    String? bundlePrice,
+    String? bundleStock,
+    String? bundleDiscount,
+  }) {
+    state = state.copyWith(
+      bundleName: bundleName,
+      bundlePrice: bundlePrice,
+      bundleStock: bundleStock,
+      bundleDiscount: bundleDiscount,
+    );
   }
 
   void addProductToBundle(String productId) {
-    _selectedProductIds.add(productId);
-    _updateBundleStock();
-    notifyListeners();
+    final updated = {...state.selectedProductIds, productId};
+    state = state.copyWith(selectedProductIds: updated);
+    _updateBundleStock(updated);
   }
 
   void removeProductFromBundle(String productId) {
-    _selectedProductIds.remove(productId);
-    _updateBundleStock();
-    notifyListeners();
+    final updated = Set<String>.from(state.selectedProductIds)..remove(productId);
+    state = state.copyWith(selectedProductIds: updated);
+    _updateBundleStock(updated);
   }
 
-  void _updateBundleStock() {
-    if (_selectedProductIds.isEmpty) {
-      _maxStock = 0;
-    } else {
-      final selectedProducts = _products.where((product) => _selectedProductIds.contains(product.id)).toList();
-      _maxStock = selectedProducts.map((product) => product.stock).reduce((min, stock) => stock < min ? stock : min);
+  void _updateBundleStock(Set<String> selected) {
+    if (selected.isEmpty) {
+      state = state.copyWith(maxStock: 0);
+      return;
     }
-    notifyListeners();
+    final selectedProducts = state.products.where((p) => selected.contains(p.id)).toList();
+    if (selectedProducts.isEmpty) {
+      state = state.copyWith(maxStock: 0);
+      return;
+    }
+    final minStock = selectedProducts.map((p) => p.stock).reduce((min, s) => s < min ? s : min);
+    state = state.copyWith(maxStock: minStock);
   }
 
   Future<void> createBundle() async {
     try {
-      final bundleName = bundleNameController.text;
-      final bundlePrice = double.tryParse(bundlePriceController.text) ?? 0.0;
-      final bundleStock = int.tryParse(bundleStockController.text) ?? 0;
-      final bundleDiscount = double.tryParse(bundleDiscountController.text) ?? 0.0;
-
-      if (bundleName.isEmpty || _selectedProductIds.isEmpty) {
+      if (state.bundleName.isEmpty || state.selectedProductIds.isEmpty) {
         throw Exception('Bundle name or selected products cannot be empty');
       }
+      if (state.mainImageData == null) {
+        throw Exception('Bundle image is required');
+      }
 
-      User user = FirebaseAuth.instance.currentUser!;
+      final user = FirebaseAuth.instance.currentUser!;
+      final bundlePrice = double.tryParse(state.bundlePrice) ?? 0.0;
+      final bundleStock = int.tryParse(state.bundleStock) ?? 0;
+      final bundleDiscount = double.tryParse(state.bundleDiscount) ?? 0.0;
 
-      final mainImageRef = FirebaseStorage.instance.ref().child('bundle_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
+      final imageRef = FirebaseStorage.instance
+          .ref()
+          .child('bundle_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
+      await imageRef.putData(state.mainImageData!);
+      final imageUrl = await imageRef.getDownloadURL();
 
-      await mainImageRef.putData(_mainImageData!);
-
-      final mainImageUrl = await mainImageRef.getDownloadURL();
-
-      final bundleData = {
-        'name': bundleName,
-        'productIds': _selectedProductIds.toList(),
+      await FirebaseFirestore.instance.collection('bundles').add({
+        'name': state.bundleName,
+        'productIds': state.selectedProductIds.toList(),
         'price': bundlePrice,
         'stock': bundleStock,
         'discount': bundleDiscount,
-        'mainImageUrl': mainImageUrl,
+        'mainImageUrl': imageUrl,
         'sellerId': user.uid,
-      };
-
-      await FirebaseFirestore.instance.collection('bundles').add(bundleData);
-
-      notifyListeners();
+      });
     } catch (e) {
-      // Handle errors appropriately
-      print('Failed to create bundle: $e');
-      // Optionally, you can show a user-friendly message using a dialog or a snackbar
+      debugPrint('createBundle failed: $e');
     }
   }
 
@@ -125,70 +175,51 @@ class BundleViewModel extends ChangeNotifier {
     try {
       final response = await http.get(Uri.parse(imageUrl));
       if (response.statusCode == 200) {
-        _mainImageData = response.bodyBytes;
-        notifyListeners();
+        state = state.copyWith(mainImageData: response.bodyBytes);
       }
     } catch (e) {
-      print('Error loading image: $e');
+      debugPrint('loadImageFromUrl failed: $e');
     }
   }
 
   Future<void> pickImage() async {
-    XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       final Uint8List imageData = await image.readAsBytes();
-
-      _mainImageData = imageData;
-      notifyListeners();
+      state = state.copyWith(mainImageData: imageData);
     }
   }
 
   void deleteMainImage() {
-    _mainImageData = null;
-    notifyListeners();
+    state = state.copyWith(clearMainImage: true);
   }
 
   Future<void> fetchSuggestions() async {
     const url = 'http://localhost:8000/api/recommend-bundles/';
-    final headers = {'Content-Type': 'application/json'};
-    final body = json.encode(
-      products.map((product) => product.toJson()).toList(),
-    );
-
+    final body = json.encode(state.products.map((p) => p.toJson()).toList());
     try {
-      final response = await http.post(Uri.parse(url), headers: headers, body: body);
-
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('Suggestions: $data');
-
-        _suggestions = (data['bundles'] as List).map<BundleModel>((bundle) => BundleModel.fromJson(bundle)).toList();
-
-        notifyListeners();
+        debugPrint('Suggestions: $data');
+        final suggestions = (data['bundles'] as List)
+            .map<BundleModel>((b) => BundleModel.fromJson(b))
+            .toList();
+        state = state.copyWith(suggestions: suggestions);
       } else {
-        print('Error: ${response.reasonPhrase}');
+        debugPrint('fetchSuggestions error: ${response.reasonPhrase}');
       }
     } catch (e) {
-      print('Exception: $e');
+      debugPrint('fetchSuggestions exception: $e');
     }
   }
 
   Future<void> getSuggestions() {
-    if (_fetchSuggestionsFuture != null) {
-      return _fetchSuggestionsFuture!;
-    }
-
-    // Otherwise, start fetching and store the future
-    _fetchSuggestionsFuture = fetchSuggestions();
+    _fetchSuggestionsFuture ??= fetchSuggestions();
     return _fetchSuggestionsFuture!;
-  }
-
-  @override
-  void dispose() {
-    bundleNameController.dispose();
-    bundleStockController.dispose();
-    bundlePriceController.dispose();
-    super.dispose();
   }
 }

@@ -2,15 +2,14 @@ import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:http/http.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:unshelf_buyer/views/chat_screen.dart';
 import 'package:unshelf_buyer/views/order_placed_view.dart';
 import 'package:unshelf_buyer/viewmodels/order_viewmodel.dart';
 import 'package:unshelf_buyer/components/datetime_picker.dart';
 
-class CheckoutView extends StatefulWidget {
+class CheckoutView extends ConsumerStatefulWidget {
   final List<Map<String, dynamic>> basketItems;
   final String? sellerId;
 
@@ -20,7 +19,7 @@ class CheckoutView extends StatefulWidget {
   _CheckoutViewState createState() => _CheckoutViewState();
 }
 
-class _CheckoutViewState extends State<CheckoutView> {
+class _CheckoutViewState extends ConsumerState<CheckoutView> {
   Map<String, Map<String, dynamic>> storeDetails = {};
   double totalAmount = 0.0;
   double totalRegular = 0.0;
@@ -141,7 +140,7 @@ class _CheckoutViewState extends State<CheckoutView> {
       try {
         // Create the order document in Firestore
         if (selectedPaymentMethod == 'Card') {
-          final orderViewModel = Provider.of<OrderViewModel>(context, listen: false);
+          final orderViewModel = ref.read(orderViewModelProvider.notifier);
           bool paymentSuccess = await orderViewModel.processOrderAndPayment(
               user.uid, widget.basketItems, widget.sellerId!, orderId, totalAmount, selectedPickupDateTime!, usePoints, points);
           if (paymentSuccess) {

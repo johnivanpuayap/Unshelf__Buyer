@@ -1,100 +1,120 @@
-// viewmodels/item_view_model.dart
-import 'package:flutter/material.dart';
+// viewmodels/listing_viewmodel.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:unshelf_buyer/models/bundle_model.dart';
-import 'package:unshelf_buyer/models/product_model.dart';
 import 'package:unshelf_buyer/models/item_model.dart';
+import 'package:unshelf_buyer/models/product_model.dart';
 
-class ListingViewModel extends ChangeNotifier {
-  List<ItemModel> _items = [];
-  bool _isLoading = true;
-  bool _showingProducts = true;
+part 'listing_viewmodel.g.dart';
 
-  List<ItemModel> get items => _items;
-  bool get isLoading => _isLoading;
-  bool get showingProducts => _showingProducts;
+class ListingState {
+  const ListingState({
+    this.items = const [],
+    this.isLoading = true,
+    this.showingProducts = true,
+  });
 
-  ListingViewModel() {
-    _fetchItems();
+  final List<ItemModel> items;
+  final bool isLoading;
+  final bool showingProducts;
+
+  ListingState copyWith({
+    List<ItemModel>? items,
+    bool? isLoading,
+    bool? showingProducts,
+  }) {
+    return ListingState(
+      items: items ?? this.items,
+      isLoading: isLoading ?? this.isLoading,
+      showingProducts: showingProducts ?? this.showingProducts,
+    );
+  }
+}
+
+@riverpod
+class ListingViewModel extends _$ListingViewModel {
+  @override
+  ListingState build() {
+    Future.microtask(() => _fetchItems());
+    return const ListingState(isLoading: true);
   }
 
   Future<void> _fetchItems() async {
-    _isLoading = true;
-    notifyListeners();
+    state = state.copyWith(isLoading: true);
 
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      try {
-        // Fetch products
-        final productSnapshot =
-            await FirebaseFirestore.instance.collection('products').where('sellerId', isEqualTo: user.uid).get();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      state = state.copyWith(items: [], isLoading: false);
+      return;
+    }
 
-        print('Mapping products');
-        final products = productSnapshot.docs
-            .map((doc) {
-              try {
-                return ProductModel.fromSnapshot(doc) as ItemModel?;
-              } catch (e) {
-                print('Error mapping product: $e');
-                return null;
-              }
-            })
-            .where((product) => product != null)
-            .cast<ItemModel>()
-            .toList();
+    try {
+      final productSnapshot = await FirebaseFirestore.instance
+          .collection('products')
+          .where('sellerId', isEqualTo: user.uid)
+          .get();
 
-        // Fetch bundles
-        final bundleSnapshot =
-            await FirebaseFirestore.instance.collection('bundles').where('sellerId', isEqualTo: user.uid).get();
+      debugPrint('Mapping products');
+      final products = productSnapshot.docs
+          .map((doc) {
+            try {
+              return ProductModel.fromSnapshot(doc) as ItemModel?;
+            } catch (e) {
+              debugPrint('Error mapping product: $e');
+              return null;
+            }
+          })
+          .whereType<ItemModel>()
+          .toList();
 
-        final bundles = bundleSnapshot.docs
-            .map((doc) {
-              try {
-                return BundleModel.fromSnapshot(doc) as ItemModel?;
-              } catch (e) {
-                print('Error mapping bundle: $e');
-                return null;
-              }
-            })
-            .where((bundle) => bundle != null)
-            .cast<ItemModel>()
-            .toList();
+      final bundleSnapshot = await FirebaseFirestore.instance
+          .collection('bundles')
+          .where('sellerId', isEqualTo: user.uid)
+          .get();
 
-        _items = showingProducts ? products : bundles;
-      } catch (e) {
-        print('Error fetching items: $e');
-        _items = [];
-      } finally {
-        _isLoading = false;
-        notifyListeners();
-      }
-    } else {
-      _items = [];
-      _isLoading = false;
-      notifyListeners();
+      final bundles = bundleSnapshot.docs
+          .map((doc) {
+            try {
+              return BundleModel.fromSnapshot(doc) as ItemModel?;
+            } catch (e) {
+              debugPrint('Error mapping bundle: $e');
+              return null;
+            }
+          })
+          .whereType<ItemModel>()
+          .toList();
+
+      state = state.copyWith(
+        items: state.showingProducts ? products : bundles,
+        isLoading: false,
+      );
+    } catch (e) {
+      debugPrint('_fetchItems failed: $e');
+      state = state.copyWith(items: [], isLoading: false);
     }
   }
 
   Future<void> addProduct(Map<String, dynamic> productData) async {
     await FirebaseFirestore.instance.collection('products').add(productData);
-    _fetchItems(); // Refresh the list
+    await _fetchItems();
   }
 
   Future<void> addBundle(Map<String, dynamic> bundleData) async {
     await FirebaseFirestore.instance.collection('bundles').add(bundleData);
-    _fetchItems(); // Refresh the list
+    await _fetchItems();
   }
 
   Future<void> deleteItem(String itemId, bool isProduct) async {
     final collection = isProduct ? 'products' : 'bundles';
     await FirebaseFirestore.instance.collection(collection).doc(itemId).delete();
-    _fetchItems(); // Refresh the list
+    await _fetchItems();
   }
 
   void toggleView() {
-    _showingProducts = !_showingProducts;
-    _fetchItems(); // Refresh the list based on the selected view
+    state = state.copyWith(showingProducts: !state.showingProducts);
+    _fetchItems();
   }
 
   void refreshItems() {
@@ -102,8 +122,6 @@ class ListingViewModel extends ChangeNotifier {
   }
 
   void clear() {
-    _items = [];
-    _isLoading = true;
-    notifyListeners();
+    state = const ListingState(items: [], isLoading: true);
   }
 }

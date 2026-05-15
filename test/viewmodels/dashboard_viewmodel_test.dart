@@ -1,30 +1,39 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:unshelf_buyer/viewmodels/dashboard_viewmodel.dart';
 
 void main() {
   group('DashboardViewModel', () {
-    test('initial state is zeroed counters and zero sales', () {
-      final viewModel = DashboardViewModel();
+    ProviderContainer makeContainer() {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      return container;
+    }
 
-      expect(viewModel.pendingOrders, 0);
-      expect(viewModel.processedOrders, 0);
-      expect(viewModel.completedOrders, 0);
-      expect(viewModel.totalOrders, 0);
-      expect(viewModel.totalSales, 0.0);
+    test('initial state is zeroed counters and zero sales', () {
+      final container = makeContainer();
+      final state = container.read(dashboardViewModelProvider);
+
+      expect(state.pendingOrders, 0);
+      expect(state.processedOrders, 0);
+      expect(state.completedOrders, 0);
+      expect(state.totalOrders, 0);
+      expect(state.totalSales, 0.0);
     });
 
     test('fetchDashboardData populates simulated values and notifies', () async {
-      final viewModel = DashboardViewModel();
+      final container = makeContainer();
       var notified = false;
-      viewModel.addListener(() => notified = true);
+      container.listen(dashboardViewModelProvider, (_, __) => notified = true);
 
-      await viewModel.fetchDashboardData();
+      await container.read(dashboardViewModelProvider.notifier).fetchDashboardData();
 
-      expect(viewModel.pendingOrders, 5);
-      expect(viewModel.processedOrders, 8);
-      expect(viewModel.completedOrders, 12);
-      expect(viewModel.totalOrders, 200);
-      expect(viewModel.totalSales, 10000.0);
+      final state = container.read(dashboardViewModelProvider);
+      expect(state.pendingOrders, 5);
+      expect(state.processedOrders, 8);
+      expect(state.completedOrders, 12);
+      expect(state.totalOrders, 200);
+      expect(state.totalSales, 10000.0);
       expect(notified, isTrue);
     });
   });

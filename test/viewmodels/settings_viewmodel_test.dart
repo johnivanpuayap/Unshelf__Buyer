@@ -1,36 +1,59 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:unshelf_buyer/viewmodels/settings_viewmodel.dart';
 
 void main() {
   group('SettingsViewModel', () {
-    late SettingsViewModel viewModel;
-
-    setUp(() => viewModel = SettingsViewModel());
+    ProviderContainer makeContainer() {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      return container;
+    }
 
     test('starts with notifications enabled and English', () {
-      expect(viewModel.settings.notificationsEnabled, isTrue);
-      expect(viewModel.settings.language, 'English');
+      final container = makeContainer();
+      final settings = container.read(settingsViewModelProvider);
+      expect(settings.notificationsEnabled, isTrue);
+      expect(settings.language, 'English');
     });
 
-    test('toggleNotifications updates the flag and notifies', () {
+    test('toggleNotifications updates the flag', () {
+      final container = makeContainer();
+
+      container.read(settingsViewModelProvider.notifier).toggleNotifications(false);
+
+      final settings = container.read(settingsViewModelProvider);
+      expect(settings.notificationsEnabled, isFalse);
+      expect(settings.language, 'English');
+    });
+
+    test('toggleNotifications notifies listeners', () {
+      final container = makeContainer();
       var notified = false;
-      viewModel.addListener(() => notified = true);
+      container.listen(settingsViewModelProvider, (_, __) => notified = true);
 
-      viewModel.toggleNotifications(false);
+      container.read(settingsViewModelProvider.notifier).toggleNotifications(false);
 
-      expect(viewModel.settings.notificationsEnabled, isFalse);
-      expect(viewModel.settings.language, 'English');
       expect(notified, isTrue);
     });
 
-    test('changeLanguage updates the language and notifies', () {
+    test('changeLanguage updates the language', () {
+      final container = makeContainer();
+
+      container.read(settingsViewModelProvider.notifier).changeLanguage('Filipino');
+
+      final settings = container.read(settingsViewModelProvider);
+      expect(settings.language, 'Filipino');
+      expect(settings.notificationsEnabled, isTrue);
+    });
+
+    test('changeLanguage notifies listeners', () {
+      final container = makeContainer();
       var notified = false;
-      viewModel.addListener(() => notified = true);
+      container.listen(settingsViewModelProvider, (_, __) => notified = true);
 
-      viewModel.changeLanguage('Filipino');
+      container.read(settingsViewModelProvider.notifier).changeLanguage('Filipino');
 
-      expect(viewModel.settings.language, 'Filipino');
-      expect(viewModel.settings.notificationsEnabled, isTrue);
       expect(notified, isTrue);
     });
   });

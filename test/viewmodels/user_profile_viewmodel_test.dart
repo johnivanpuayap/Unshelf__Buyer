@@ -1,8 +1,10 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:unshelf_buyer/data/repositories/auth_repository.dart';
 import 'package:unshelf_buyer/data/repositories/user_repository.dart';
 import 'package:unshelf_buyer/models/user_model.dart';
+import 'package:unshelf_buyer/providers.dart';
 import 'package:unshelf_buyer/viewmodels/user_profile_viewmodel.dart';
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
@@ -13,13 +15,20 @@ void main() {
   group('UserProfileViewModel', () {
     late _MockAuthRepository mockAuth;
     late _MockUserRepository mockUsers;
-    late UserProfileViewModel viewModel;
 
     setUp(() {
       mockAuth = _MockAuthRepository();
       mockUsers = _MockUserRepository();
-      viewModel = UserProfileViewModel(authRepository: mockAuth, userRepository: mockUsers);
     });
+
+    ProviderContainer makeContainer() {
+      final container = ProviderContainer(overrides: [
+        authRepositoryProvider.overrideWithValue(mockAuth),
+        userRepositoryProvider.overrideWithValue(mockUsers),
+      ]);
+      addTearDown(container.dispose);
+      return container;
+    }
 
     group('loadUserProfile', () {
       test('populates userProfile from repository data', () async {
@@ -27,34 +36,40 @@ void main() {
         when(() => mockUsers.fetchProfile('uid-1')).thenAnswer(
           (_) async => {'name': 'Ivan', 'email': 'ivan@example.com', 'phoneNumber': '+639...'},
         );
+        final container = makeContainer();
 
-        await viewModel.loadUserProfile();
+        await container.read(userProfileViewModelProvider.notifier).loadUserProfile();
 
-        expect(viewModel.userProfile.name, 'Ivan');
-        expect(viewModel.userProfile.email, 'ivan@example.com');
-        expect(viewModel.userProfile.phoneNumber, '+639...');
-        expect(viewModel.errorMessage, isNull);
-        expect(viewModel.isLoading, isFalse);
+        final state = container.read(userProfileViewModelProvider);
+        expect(state.userProfile.name, 'Ivan');
+        expect(state.userProfile.email, 'ivan@example.com');
+        expect(state.userProfile.phoneNumber, '+639...');
+        expect(state.errorMessage, isNull);
+        expect(state.isLoading, isFalse);
       });
 
       test('sets errorMessage when no user is signed in', () async {
         when(() => mockAuth.currentUserId).thenReturn(null);
+        final container = makeContainer();
 
-        await viewModel.loadUserProfile();
+        await container.read(userProfileViewModelProvider.notifier).loadUserProfile();
 
-        expect(viewModel.errorMessage, 'Failed to load user profile');
-        expect(viewModel.isLoading, isFalse);
+        final state = container.read(userProfileViewModelProvider);
+        expect(state.errorMessage, 'Failed to load user profile');
+        expect(state.isLoading, isFalse);
         verifyNever(() => mockUsers.fetchProfile(any()));
       });
 
       test('sets errorMessage when fetch throws', () async {
         when(() => mockAuth.currentUserId).thenReturn('uid-1');
         when(() => mockUsers.fetchProfile('uid-1')).thenThrow(Exception('firestore down'));
+        final container = makeContainer();
 
-        await viewModel.loadUserProfile();
+        await container.read(userProfileViewModelProvider.notifier).loadUserProfile();
 
-        expect(viewModel.errorMessage, 'Failed to load user profile');
-        expect(viewModel.isLoading, isFalse);
+        final state = container.read(userProfileViewModelProvider);
+        expect(state.errorMessage, 'Failed to load user profile');
+        expect(state.isLoading, isFalse);
       });
     });
 
@@ -64,8 +79,9 @@ void main() {
       test('updates profile fields when password is null', () async {
         when(() => mockAuth.currentUserId).thenReturn('uid-1');
         when(() => mockUsers.updateProfile(any(), any())).thenAnswer((_) async {});
+        final container = makeContainer();
 
-        await viewModel.updateUserProfile(newProfile);
+        await container.read(userProfileViewModelProvider.notifier).updateUserProfile(newProfile);
 
         verify(() => mockUsers.updateProfile('uid-1', {
               'name': 'New',
@@ -73,8 +89,9 @@ void main() {
               'phoneNumber': '123',
             })).called(1);
         verifyNever(() => mockAuth.updatePassword(any()));
-        expect(viewModel.userProfile, newProfile);
-        expect(viewModel.errorMessage, isNull);
+        final state = container.read(userProfileViewModelProvider);
+        expect(state.userProfile, newProfile);
+        expect(state.errorMessage, isNull);
       });
 
       test('updates password when password is provided', () async {
@@ -82,20 +99,24 @@ void main() {
         when(() => mockAuth.updatePassword(any())).thenAnswer((_) async {});
         when(() => mockUsers.updateProfile(any(), any())).thenAnswer((_) async {});
         final withPassword = UserProfileModel(name: 'X', email: 'x@e.com', phoneNumber: '1', password: 'secret');
+        final container = makeContainer();
 
-        await viewModel.updateUserProfile(withPassword);
+        await container.read(userProfileViewModelProvider.notifier).updateUserProfile(withPassword);
 
         verify(() => mockAuth.updatePassword('secret')).called(1);
-        expect(viewModel.userProfile, withPassword);
-        expect(viewModel.errorMessage, isNull);
+        final state = container.read(userProfileViewModelProvider);
+        expect(state.userProfile, withPassword);
+        expect(state.errorMessage, isNull);
       });
 
       test('errors when no user is signed in', () async {
         when(() => mockAuth.currentUserId).thenReturn(null);
+        final container = makeContainer();
 
-        await viewModel.updateUserProfile(newProfile);
+        await container.read(userProfileViewModelProvider.notifier).updateUserProfile(newProfile);
 
-        expect(viewModel.errorMessage, 'Failed to update user profile');
+        final state = container.read(userProfileViewModelProvider);
+        expect(state.errorMessage, 'Failed to update user profile');
         verifyNever(() => mockUsers.updateProfile(any(), any()));
         verifyNever(() => mockAuth.updatePassword(any()));
       });
@@ -103,11 +124,13 @@ void main() {
       test('sets errorMessage when update throws', () async {
         when(() => mockAuth.currentUserId).thenReturn('uid-1');
         when(() => mockUsers.updateProfile(any(), any())).thenThrow(Exception('permission denied'));
+        final container = makeContainer();
 
-        await viewModel.updateUserProfile(newProfile);
+        await container.read(userProfileViewModelProvider.notifier).updateUserProfile(newProfile);
 
-        expect(viewModel.errorMessage, 'Failed to update user profile');
-        expect(viewModel.isLoading, isFalse);
+        final state = container.read(userProfileViewModelProvider);
+        expect(state.errorMessage, 'Failed to update user profile');
+        expect(state.isLoading, isFalse);
       });
     });
   });

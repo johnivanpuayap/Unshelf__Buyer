@@ -2,8 +2,6 @@
 import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:provider/provider.dart';
-import 'package:unshelf_buyer/viewmodels/order_address_viewmodel.dart';
 
 class EditOrderAddressView extends StatelessWidget {
   // final StoreModel storeDetails;
