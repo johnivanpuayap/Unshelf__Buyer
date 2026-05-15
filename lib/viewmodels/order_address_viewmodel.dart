@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:unshelf_buyer/data/repositories/auth_repository.dart';
