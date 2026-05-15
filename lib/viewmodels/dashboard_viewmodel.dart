@@ -15,9 +15,7 @@ class DashboardViewModel extends ChangeNotifier {
         processedOrders = 0,
         completedOrders = 0,
         totalOrders = 0,
-        totalSales = 0.0 {
-    fetchDashboardData();
-  }
+        totalSales = 0.0;
 
   Future<void> fetchDashboardData() async {
     // Fetch data from the server
