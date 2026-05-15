@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -188,21 +187,25 @@ class _BasketViewState extends State<BasketView> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
         elevation: 0,
         toolbarHeight: 65,
-        title: const Text(
+        title: Text(
           "Basket",
-          style: TextStyle(color: Colors.white, fontSize: 25.0),
+          style: tt.headlineSmall?.copyWith(color: cs.onPrimary),
         ),
         bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(4.0),
-            child: Container(
-              color: AppColors.lightColor,
-              height: 6.0,
-            )),
+          preferredSize: const Size.fromHeight(4.0),
+          child: Container(
+            color: cs.primary.withValues(alpha: 0.6),
+            height: 4.0,
+          ),
+        ),
       ),
       body: Stack(
         children: [
@@ -236,6 +239,7 @@ class _BasketViewState extends State<BasketView> {
                           Checkbox(
                             value: allStoreItemsSelected,
                             tristate: someStoreItemsSelected && !allStoreItemsSelected,
+                            activeColor: cs.primary,
                             onChanged: (isChecked) {
                               toggleStoreSelection(sellerId, isChecked ?? false);
                             },
@@ -247,7 +251,7 @@ class _BasketViewState extends State<BasketView> {
                           const SizedBox(width: 8.0),
                           Text(
                             sellerId != null ? storeName : 'Loading...',
-                            style: const TextStyle(fontSize: 16),
+                            style: tt.titleSmall?.copyWith(color: cs.onSurface),
                           ),
                         ],
                       ),
@@ -270,6 +274,7 @@ class _BasketViewState extends State<BasketView> {
                           children: [
                             Checkbox(
                               value: selectedBatchIds.contains(batchId),
+                              activeColor: cs.primary,
                               onChanged: (value) {
                                 setState(() {
                                   if (value == true) {
@@ -309,19 +314,24 @@ class _BasketViewState extends State<BasketView> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(productName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                                  Text('${productQuantifier}: ₱${priceAfterDiscount.toStringAsFixed(2)}',
-                                      style: const TextStyle(color: Colors.grey)),
+                                  Text(
+                                    productName,
+                                    style: tt.titleSmall?.copyWith(color: cs.onSurface),
+                                  ),
+                                  Text(
+                                    '$productQuantifier: ₱${priceAfterDiscount.toStringAsFixed(2)}',
+                                    style: tt.bodySmall?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
+                                  ),
                                   Row(
                                     children: [
-                                      const Text("Qty: "),
+                                      Text("Qty: ", style: tt.bodySmall?.copyWith(color: cs.onSurface)),
                                       IconButton(
-                                        icon: const Icon(Icons.remove),
+                                        icon: Icon(Icons.remove, color: cs.onSurface),
                                         onPressed: batchQuantity > 1
                                             ? () {
                                                 setState(() {
@@ -331,9 +341,9 @@ class _BasketViewState extends State<BasketView> {
                                               }
                                             : null,
                                       ),
-                                      Text('$batchQuantity'),
+                                      Text('$batchQuantity', style: tt.bodyMedium?.copyWith(color: cs.onSurface)),
                                       IconButton(
-                                        icon: const Icon(Icons.add),
+                                        icon: Icon(Icons.add, color: cs.onSurface),
                                         onPressed: batchQuantity < batchStock
                                             ? () {
                                                 setState(() {
@@ -348,16 +358,18 @@ class _BasketViewState extends State<BasketView> {
                                 ],
                               ),
                             ),
-                            Text('₱${(priceAfterDiscount * batchQuantity).toStringAsFixed(2)}',
-                                style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Text(
+                              '₱${(priceAfterDiscount * batchQuantity).toStringAsFixed(2)}',
+                              style: tt.titleSmall?.copyWith(color: cs.onSurface, fontWeight: FontWeight.bold),
+                            ),
                           ],
                         ),
                       );
                     }).toList(),
                     Divider(
-                      thickness: 0.2,
+                      thickness: 0.5,
                       height: 1,
-                      color: Colors.grey[600],
+                      color: cs.outline.withValues(alpha: 0.4),
                     ),
                   ],
                 );
@@ -373,7 +385,10 @@ class _BasketViewState extends State<BasketView> {
         child: Row(
           children: [
             const Spacer(),
-            Text("Total: ₱${total.toStringAsFixed(2)}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              "Total: ₱${total.toStringAsFixed(2)}",
+              style: tt.titleMedium?.copyWith(color: cs.onSurface, fontWeight: FontWeight.bold),
+            ),
             const Spacer(),
             ElevatedButton(
               onPressed: selectedBatchIds.isEmpty
@@ -401,22 +416,7 @@ class _BasketViewState extends State<BasketView> {
                         ),
                       );
                     },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                child: Text(
-                  "CHECKOUT",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+              child: Text("Checkout", style: tt.labelLarge?.copyWith(color: cs.onPrimary)),
             ),
           ],
         ),
