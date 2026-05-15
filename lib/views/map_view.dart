@@ -12,7 +12,6 @@ library;
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:geolocator/geolocator.dart';
@@ -37,8 +36,6 @@ class _MapPageState extends State<MapPage>
   final TextEditingController _searchController = TextEditingController();
 
   LatLng? _currentPosition;
-  final LatLng _basePosition =
-      const LatLng(10.30943566786076, 123.88635816441766);
 
   bool _isLoading = true;
   bool _locationError = false;
@@ -199,7 +196,8 @@ class _MapPageState extends State<MapPage>
                     Text('Open now only', style: tt.bodyMedium),
                     Switch(
                       value: _openNowOnly,
-                      activeColor: cs.primary,
+                      activeThumbColor: cs.onPrimary,
+                      activeTrackColor: cs.primary,
                       onChanged: (v) {
                         setSheetState(() => _openNowOnly = v);
                         setState(() => _openNowOnly = v);
@@ -215,18 +213,29 @@ class _MapPageState extends State<MapPage>
                 Text('Sort by', style: tt.labelLarge),
                 const SizedBox(height: 8),
 
-                ..._SortMode.values.map((mode) => RadioListTile<_SortMode>(
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(mode.label, style: tt.bodyMedium),
-                      value: mode,
-                      groupValue: _sortMode,
-                      activeColor: cs.primary,
-                      onChanged: (v) {
-                        if (v == null) return;
-                        setSheetState(() => _sortMode = v);
-                        setState(() => _sortMode = v);
+                ..._SortMode.values.map((mode) => InkWell(
+                      onTap: () {
+                        setSheetState(() => _sortMode = mode);
+                        setState(() => _sortMode = mode);
                       },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          children: [
+                            Radio<_SortMode>(
+                              value: mode,
+                              groupValue: _sortMode,
+                              activeColor: cs.primary,
+                              onChanged: (v) {
+                                if (v == null) return;
+                                setSheetState(() => _sortMode = v);
+                                setState(() => _sortMode = v);
+                              },
+                            ),
+                            Text(mode.label, style: tt.bodyMedium),
+                          ],
+                        ),
+                      ),
                     )),
 
                 const SizedBox(height: 8),

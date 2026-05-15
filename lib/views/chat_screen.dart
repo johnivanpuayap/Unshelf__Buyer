@@ -12,7 +12,6 @@ library;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:unshelf_buyer/components/empty_state_view.dart';
 import 'package:unshelf_buyer/views/basket_view.dart';
@@ -29,8 +28,6 @@ class _ChatScreenState extends State<ChatScreen>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
-
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   // Derive initials from a store name (up to 2 chars).
   String _initials(String name) {
