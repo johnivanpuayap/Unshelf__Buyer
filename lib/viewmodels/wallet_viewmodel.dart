@@ -1,27 +1,27 @@
 import 'package:flutter/foundation.dart';
-import 'package:unshelf_buyer/services/paymongo_service.dart';
+import 'package:unshelf_buyer/services/wallet_service.dart';
 
 class WalletViewModel extends ChangeNotifier {
-  final PayMongoService _payMongoService = PayMongoService();
+  WalletViewModel({required WalletService walletService}) : _walletService = walletService;
+
+  final WalletService _walletService;
+
   double _balance = 0.0;
-  bool _isLoading = true;
+  bool _isLoading = false;
   String? _errorMessage;
 
   double get balance => _balance;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  WalletViewModel() {
-    _loadBalance();
-  }
-
-  Future<void> _loadBalance() async {
+  Future<void> loadBalance() async {
+    _isLoading = true;
+    notifyListeners();
     try {
-      _isLoading = true;
-      notifyListeners();
-      _balance = await _payMongoService.getWalletBalance();
+      _balance = await _walletService.getWalletBalance();
       _errorMessage = null;
     } catch (e) {
+      debugPrint('loadBalance failed: $e');
       _errorMessage = 'Failed to load balance: $e';
     } finally {
       _isLoading = false;

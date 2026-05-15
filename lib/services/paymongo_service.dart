@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:unshelf_buyer/services/wallet_service.dart';
 
-class PayMongoService {
+class PayMongoService implements WalletService {
   final String _baseUrl =
       'https://api.paymongo.com'; // Replace with actual PayMongo API base URL
   final String _apiKey =
       'pk_test_fGVMd5njs9hDoq48NyS5LjEA'; // Replace with your actual API key
 
+  @override
   Future<double> getWalletBalance() async {
     final response = await http.get(
       Uri.parse(
