@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:unshelf_buyer/viewmodels/store_viewmodel.dart';
 import 'package:unshelf_buyer/views/chat_view.dart';
@@ -13,14 +13,14 @@ import 'package:unshelf_buyer/views/product_view.dart';
 import 'package:unshelf_buyer/views/store_address_view.dart';
 import 'package:unshelf_buyer/views/store_reviews_view.dart';
 
-class StoreView extends StatefulWidget {
+class StoreView extends ConsumerStatefulWidget {
   final String storeId;
   StoreView({required this.storeId});
   @override
   _StoreViewState createState() => _StoreViewState();
 }
 
-class _StoreViewState extends State<StoreView> {
+class _StoreViewState extends ConsumerState<StoreView> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
   Map<String, double> minPrices = {};
@@ -40,8 +40,7 @@ class _StoreViewState extends State<StoreView> {
     });
 
     _checkIfFollow();
-    // Fetch store details
-    Provider.of<StoreViewModel>(context, listen: false).fetchStoreDetails(widget.storeId);
+    // fetchStoreDetails is triggered automatically by the family provider build().
   }
 
   @override
@@ -368,23 +367,25 @@ class _StoreViewState extends State<StoreView> {
         ),
         backgroundColor: AppColors.primaryColor,
       ),
-      body: Consumer<StoreViewModel>(
-        builder: (context, storeViewModel, child) {
-          if (storeViewModel.isLoading) {
+      body: Builder(
+        builder: (context) {
+          final storeState = ref.watch(storeViewModelProvider(widget.storeId));
+
+          if (storeState.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (storeViewModel.errorMessage != null) {
+          if (storeState.errorMessage != null) {
             return Center(
-              child: Text(storeViewModel.errorMessage!),
+              child: Text(storeState.errorMessage!),
             );
           }
 
-          if (storeViewModel.storeDetails == null) {
+          if (storeState.storeDetails == null) {
             return const Center(child: Text('No store data available'));
           }
 
-          var storeDetails = storeViewModel.storeDetails!;
+          var storeDetails = storeState.storeDetails!;
           followerCount = storeDetails.storeFollowers ?? 0;
 
           return FutureBuilder<List<DocumentSnapshot>>(

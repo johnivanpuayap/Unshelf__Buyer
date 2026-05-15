@@ -1,49 +1,80 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:unshelf_buyer/models/store_model.dart';
 
-class StoreViewModel extends ChangeNotifier {
-  StoreModel? storeDetails;
-  bool isLoading = true;
-  String? errorMessage;
+part 'store_viewmodel.g.dart';
 
-  StoreViewModel(String storeId) {
-    fetchStoreDetails(storeId);
+class StoreState {
+  const StoreState({
+    this.storeDetails,
+    this.isLoading = true,
+    this.errorMessage,
+  });
+
+  final StoreModel? storeDetails;
+  final bool isLoading;
+  final String? errorMessage;
+
+  StoreState copyWith({
+    StoreModel? storeDetails,
+    bool? isLoading,
+    String? errorMessage,
+    bool clearError = false,
+    bool clearStoreDetails = false,
+  }) {
+    return StoreState(
+      storeDetails: clearStoreDetails ? null : storeDetails ?? this.storeDetails,
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+    );
+  }
+}
+
+@riverpod
+class StoreViewModel extends _$StoreViewModel {
+  @override
+  StoreState build(String storeId) {
+    // Kick off data load immediately, just like the old constructor did.
+    Future.microtask(() => fetchStoreDetails(storeId));
+    return const StoreState(isLoading: true);
   }
 
   Future<void> fetchStoreDetails(String storeId) async {
-    // Check if the user is logged in
     User? user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
-      errorMessage = "User is not logged in";
-      isLoading = false;
-      notifyListeners();
+      state = state.copyWith(errorMessage: 'User is not logged in', isLoading: false, clearStoreDetails: true);
       return;
     }
 
-    isLoading = true;
-    notifyListeners();
+    state = state.copyWith(isLoading: true);
 
     try {
       DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
       DocumentSnapshot storeDoc = await FirebaseFirestore.instance.collection('stores').doc(storeId).get();
 
       if (!userDoc.exists || !storeDoc.exists) {
-        errorMessage = "User profile or store not found";
-        storeDetails = null;
+        state = state.copyWith(
+          errorMessage: 'User profile or store not found',
+          isLoading: false,
+          clearStoreDetails: true,
+        );
       } else {
-        storeDetails = StoreModel.fromSnapshot(userDoc, storeDoc);
-
-        notifyListeners();
+        state = state.copyWith(
+          storeDetails: StoreModel.fromSnapshot(userDoc, storeDoc),
+          isLoading: false,
+          clearError: true,
+        );
       }
     } catch (e) {
-      errorMessage = "Error fetching user profile: ${e.toString()}";
-      storeDetails = null;
-    } finally {
-      isLoading = false;
-      notifyListeners();
+      debugPrint('fetchStoreDetails failed: $e');
+      state = state.copyWith(
+        errorMessage: 'Error fetching user profile: ${e.toString()}',
+        isLoading: false,
+        clearStoreDetails: true,
+      );
     }
   }
 
@@ -51,69 +82,25 @@ class StoreViewModel extends ChangeNotifier {
     User? user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
-      errorMessage = "User is not logged in";
-      isLoading = false;
-      notifyListeners();
-      return 0; // or throw an exception if needed
+      state = state.copyWith(errorMessage: 'User is not logged in', isLoading: false);
+      return 0;
     }
 
     try {
-      // Example path to fetch followers from the Firestore database
-      QuerySnapshot followersSnapshot =
-          await FirebaseFirestore.instance.collection('users').doc(user!.uid).collection('followers').get();
-
+      final followersSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('followers')
+          .get();
       return followersSnapshot.size;
     } catch (e) {
-      errorMessage = "Error fetching store followers";
-      return 0; // or throw an exception if needed
-    } finally {
-      isLoading = false;
-      notifyListeners();
+      debugPrint('fetchStoreFollowers failed: $e');
+      state = state.copyWith(errorMessage: 'Error fetching store followers', isLoading: false);
+      return 0;
     }
   }
 
-  // Future<double> fetchStoreRatings() async {
-  //   User? user = FirebaseAuth.instance.currentUser;
-
-  //   if (user == null) {
-  //     errorMessage = "User is not logged in";
-  //     isLoading = false;
-  //     notifyListeners();
-  //     return 0.0; // or throw an exception if needed
-  //   }
-
-  //   try {
-  //     // Example path to fetch ratings from the Firestore database
-  //     DocumentSnapshot ratingsSnapshot =
-  //         await FirebaseFirestore.instance.collection('stores').doc(user!.uid).collection('ratings').doc('average').get();
-
-  //     // Cast the data to a Map<String, dynamic>
-  //     Map<String, dynamic>? data = ratingsSnapshot.data() as Map<String, dynamic>?;
-
-  //     return data?['average'] ?? 0.0;
-  //   } catch (e) {
-  //     errorMessage = "Error fetching store ratings";
-  //     return 0.0; // or throw an exception if needed
-  //   } finally {
-  //     isLoading = false;
-  //     notifyListeners();
-  //   }
-  // }
-
-  // String formatStoreSchedule(Map<String, Map<String, String>> schedule) {
-  //   const List<String> daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-  //   return daysOfWeek.map((day) {
-  //     Map<String, String> times = schedule[day] ?? {'open': 'Closed', 'close': 'Closed'};
-  //     String open = times['open'] ?? 'Closed';
-  //     String close = times['close'] ?? 'Closed';
-  //     return open == 'Closed' && close == 'Closed' ? '$day: Closed' : '$day: $open - $close';
-  //   }).join('\n');
-  // }
-
   void clear() {
-    storeDetails = null;
-    errorMessage = null;
-    notifyListeners();
+    state = const StoreState(storeDetails: null, isLoading: false, errorMessage: null);
   }
 }
