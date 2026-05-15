@@ -27,7 +27,28 @@ class StoreModel {
     this.storeFollowers,
   });
 
-  // Factory method to create StoreModel from Firebase document snapshot
+  // Factory method to create StoreModel from raw user + store maps (Firebase-agnostic).
+  factory StoreModel.fromMaps({
+    required String userId,
+    required Map<String, dynamic> userData,
+    required Map<String, dynamic> storeData,
+  }) {
+    return StoreModel(
+      userId: userId,
+      email: userData['email'] ?? '',
+      name: userData['name'] ?? '',
+      phoneNumber: userData['phone_number'] ?? '',
+      storeName: storeData['store_name'] ?? '',
+      storeLongitude: (storeData['longitude'] as num?)?.toDouble() ?? 0.0,
+      storeLatitude: (storeData['latitude'] as num?)?.toDouble() ?? 0.0,
+      storeImageUrl: storeData['store_image_url'] ?? storeData['storeImageUrl'] ?? '',
+      storeRating: storeData['rating'] != null ? storeData['rating'].toDouble() : 0.0,
+      storeFollowers: storeData['follower_count'] ?? 0,
+    );
+  }
+
+  // Factory method to create StoreModel from Firebase document snapshot (legacy)
+  @Deprecated('Use StoreModel.fromMaps for new code; this couples the model to cloud_firestore.')
   factory StoreModel.fromSnapshot(DocumentSnapshot userDoc, DocumentSnapshot storeDoc) {
     Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
     Map<String, dynamic> storeData = storeDoc.data() as Map<String, dynamic>;

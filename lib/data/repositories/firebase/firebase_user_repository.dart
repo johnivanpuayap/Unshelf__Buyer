@@ -18,6 +18,12 @@ class FirebaseUserRepository implements UserRepository {
   }
 
   @override
+  Future<int> fetchFollowersCount(String userId) async {
+    final snap = await _firestore.collection('users').doc(userId).collection('followers').get();
+    return snap.size;
+  }
+
+  @override
   Future<void> upsertLocation({
     required String collection,
     required String userId,
