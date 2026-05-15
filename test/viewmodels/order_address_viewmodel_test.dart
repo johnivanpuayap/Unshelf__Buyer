@@ -1,8 +1,10 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:unshelf_buyer/data/repositories/auth_repository.dart';
 import 'package:unshelf_buyer/data/repositories/user_repository.dart';
+import 'package:unshelf_buyer/providers.dart';
 import 'package:unshelf_buyer/viewmodels/order_address_viewmodel.dart';
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
@@ -13,34 +15,48 @@ void main() {
   group('OrderAddressViewModel', () {
     late _MockAuthRepository mockAuth;
     late _MockUserRepository mockUsers;
-    late OrderAddressViewModel viewModel;
 
     setUp(() {
       mockAuth = _MockAuthRepository();
       mockUsers = _MockUserRepository();
-      viewModel = OrderAddressViewModel(authRepository: mockAuth, userRepository: mockUsers);
     });
 
+    ProviderContainer makeContainer() {
+      final container = ProviderContainer(overrides: [
+        authRepositoryProvider.overrideWithValue(mockAuth),
+        userRepositoryProvider.overrideWithValue(mockUsers),
+      ]);
+      addTearDown(container.dispose);
+      return container;
+    }
+
     test('default chosenLocation is Cebu City', () {
-      expect(viewModel.chosenLocation.latitude, 10.3157);
-      expect(viewModel.chosenLocation.longitude, 123.8854);
+      final container = makeContainer();
+      final state = container.read(orderAddressViewModelProvider);
+      expect(state.chosenLocation.latitude, 10.3157);
+      expect(state.chosenLocation.longitude, 123.8854);
     });
 
     test('updateLocation mutates state and notifies', () {
+      final container = makeContainer();
       var notified = false;
-      viewModel.addListener(() => notified = true);
+      container.listen(orderAddressViewModelProvider, (_, __) => notified = true);
 
-      viewModel.updateLocation(const LatLng(14.5995, 120.9842));
+      container.read(orderAddressViewModelProvider.notifier).updateLocation(const LatLng(14.5995, 120.9842));
 
-      expect(viewModel.chosenLocation, const LatLng(14.5995, 120.9842));
+      expect(container.read(orderAddressViewModelProvider).chosenLocation, const LatLng(14.5995, 120.9842));
       expect(notified, isTrue);
     });
 
     group('saveLocation', () {
       test('throws when no user is signed in', () async {
         when(() => mockAuth.currentUserId).thenReturn(null);
+        final container = makeContainer();
 
-        await expectLater(viewModel.saveLocation(), throwsException);
+        await expectLater(
+          container.read(orderAddressViewModelProvider.notifier).saveLocation(),
+          throwsException,
+        );
         verifyNever(() => mockUsers.upsertLocation(
               collection: any(named: 'collection'),
               userId: any(named: 'userId'),
@@ -57,9 +73,10 @@ void main() {
               latitude: any(named: 'latitude'),
               longitude: any(named: 'longitude'),
             )).thenAnswer((_) async {});
-        viewModel.updateLocation(const LatLng(1.0, 2.0));
+        final container = makeContainer();
+        container.read(orderAddressViewModelProvider.notifier).updateLocation(const LatLng(1.0, 2.0));
 
-        await viewModel.saveLocation();
+        await container.read(orderAddressViewModelProvider.notifier).saveLocation();
 
         verify(() => mockUsers.upsertLocation(
               collection: 'orders',
@@ -77,8 +94,12 @@ void main() {
               latitude: any(named: 'latitude'),
               longitude: any(named: 'longitude'),
             )).thenThrow(Exception('permission denied'));
+        final container = makeContainer();
 
-        await expectLater(viewModel.saveLocation(), throwsException);
+        await expectLater(
+          container.read(orderAddressViewModelProvider.notifier).saveLocation(),
+          throwsException,
+        );
       });
     });
   });
