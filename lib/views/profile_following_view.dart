@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,11 +15,12 @@ class FollowingView extends StatelessWidget {
   }
 
   Widget _buildStoreCard(Map<String, dynamic> data, String storeId, BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Column(
       children: [
-        const SizedBox(
-          height: 20,
-        ),
+        const SizedBox(height: 16),
         GestureDetector(
           onTap: () {
             Navigator.push(
@@ -34,46 +34,37 @@ class FollowingView extends StatelessWidget {
               ),
             );
           },
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Store Image
-                Container(
-                  width: 120,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 5, offset: const Offset(0, 3))],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: CachedNetworkImage(
-                      imageUrl: data['store_image_url'],
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => const CircularProgressIndicator(),
-                      errorWidget: (context, url, error) => const Icon(Icons.error),
-                    ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: CachedNetworkImage(
+                    imageUrl: data['store_image_url'],
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => const CircularProgressIndicator(),
+                    errorWidget: (context, url, error) => const Icon(Icons.error),
                   ),
                 ),
-                const SizedBox(width: 30),
-
-                // Store Details
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        data['store_name'], // Store Name
-                        style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.black),
+                        data['store_name'],
+                        style: tt.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                     ],
                   ),
-                ), // Heart button (Remove from following)
+                ),
                 IconButton(
-                  icon: const Icon(Icons.favorite, color: AppColors.primaryColor),
+                  icon: Icon(Icons.favorite, color: cs.primary),
                   onPressed: () {
                     _removeFromFollowing(storeId);
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -85,39 +76,32 @@ class FollowingView extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(
-          height: 15,
-        ),
-        // Divider between store cards
-        Divider(
-          thickness: 0.2,
-          height: 1,
-          color: Colors.grey[600],
-        ),
+        const SizedBox(height: 8),
+        Divider(height: 1, thickness: 0.5, color: cs.outline),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     final userId = FirebaseAuth.instance.currentUser!.uid;
     final followingRef = FirebaseFirestore.instance.collection('users').doc(userId).collection('following');
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
         elevation: 0,
         toolbarHeight: 65,
-        title: const Text(
+        title: Text(
           "Following",
-          style: TextStyle(color: Colors.white, fontSize: 25),
+          style: tt.titleLarge?.copyWith(color: cs.onPrimary),
         ),
         bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(4.0),
-            child: Container(
-              color: AppColors.lightColor,
-              height: 6.0,
-            )),
+          preferredSize: const Size.fromHeight(4.0),
+          child: Container(color: cs.secondary, height: 4.0),
+        ),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: followingRef.snapshots(),
@@ -127,7 +111,12 @@ class FollowingView extends StatelessWidget {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("You aren't following any stores."));
+            return Center(
+              child: Text(
+                "You aren't following any stores.",
+                style: tt.bodyLarge?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
+              ),
+            );
           }
 
           return ListView.builder(

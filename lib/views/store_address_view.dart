@@ -1,4 +1,3 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
@@ -12,33 +11,36 @@ class StoreAddressView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
         elevation: 0,
         toolbarHeight: 65,
-        title: const Text(
+        title: Text(
           'Store Location',
-          style: TextStyle(color: Colors.white, fontSize: 25.0),
+          style: tt.titleLarge?.copyWith(color: cs.onPrimary),
         ),
       ),
       body: FlutterMap(
         options: MapOptions(
           initialCenter: LatLng(
-            latitude!,
-            longitude!,
-          ), // Center the map over London
+            latitude,
+            longitude,
+          ),
           initialZoom: 15,
         ),
         children: [
           TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', // OSMF's Tile Server
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             userAgentPackageName: 'com.example.app',
           ),
           MarkerLayer(
             markers: [
               Marker(
-                point: LatLng(latitude!, longitude!),
+                point: LatLng(latitude, longitude),
                 rotate: true,
                 child: const Icon(
                   color: Colors.lightGreen,

@@ -1,8 +1,6 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:unshelf_buyer/views/product_bundle_view.dart';
 import 'package:unshelf_buyer/views/product_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -17,7 +15,6 @@ class FavoritesView extends StatelessWidget {
   }
 
   Future<bool> _productHasBatch(String productId) async {
-    // Check if product has a batch
     final batchSnapshot = await FirebaseFirestore.instance
         .collection('batches')
         .where('productId', isEqualTo: productId)
@@ -40,7 +37,6 @@ class FavoritesView extends StatelessWidget {
   }
 
   Future<Map<String, double>> _getMinPrices(List<String> productIds) async {
-    // Fetch minimum prices for the products in the productIds list
     Map<String, double> minPrices = {};
 
     for (String productId in productIds) {
@@ -69,11 +65,12 @@ class FavoritesView extends StatelessWidget {
 
   Widget _buildProductCard(Map<String, dynamic> data, String storeName, String storeImageUrl, String productId,
       BuildContext context, Map<String, double> minPrices) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Column(
       children: [
-        const SizedBox(
-          height: 20,
-        ),
+        const SizedBox(height: 16),
         GestureDetector(
           onTap: () {
             Navigator.push(
@@ -87,54 +84,46 @@ class FavoritesView extends StatelessWidget {
               ),
             );
           },
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Product Image
-                Container(
-                  width: 120,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 5, offset: const Offset(0, 0))],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: CachedNetworkImage(
-                      imageUrl: data['mainImageUrl'],
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => const CircularProgressIndicator(),
-                      errorWidget: (context, url, error) => const Icon(Icons.error),
-                    ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: CachedNetworkImage(
+                    imageUrl: data['mainImageUrl'],
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => const CircularProgressIndicator(),
+                    errorWidget: (context, url, error) => const Icon(Icons.error),
                   ),
                 ),
-                const SizedBox(width: 30),
-                // Text Details
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        data['name'], // Product Name
-                        style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.black),
+                        data['name'],
+                        style: tt.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        "PHP ${minPrices[productId]?.toStringAsFixed(2) ?? 'N/A'}", // Price
-                        style: const TextStyle(fontSize: 14.0, color: Colors.black),
+                        "PHP ${minPrices[productId]?.toStringAsFixed(2) ?? 'N/A'}",
+                        style: tt.bodyMedium?.copyWith(color: cs.primary, fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        storeName ?? "Unknown Store", // Store Name
-                        style: const TextStyle(fontSize: 12.0, color: Colors.grey),
+                        storeName,
+                        style: tt.bodySmall?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
                       ),
                     ],
                   ),
-                ), // Heart button (Remove from favorites)
+                ),
                 IconButton(
-                  icon: const Icon(Icons.favorite, color: AppColors.primaryColor),
+                  icon: Icon(Icons.favorite, color: cs.primary),
                   onPressed: () {
                     _removeFromFavorites(productId);
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -146,41 +135,31 @@ class FavoritesView extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(
-          height: 15,
-        ),
-        Divider(
-          thickness: 0.2,
-          height: 1,
-          color: Colors.grey[600],
-        ),
+        const SizedBox(height: 8),
+        Divider(height: 1, thickness: 0.5, color: cs.outline),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     final userId = FirebaseAuth.instance.currentUser!.uid;
     final favoritesRef = FirebaseFirestore.instance.collection('users').doc(userId).collection('favorites');
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: cs.primary,
         elevation: 0,
         toolbarHeight: 65,
-        title: const Text(
+        title: Text(
           "My Favorites",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 25,
-          ),
+          style: tt.titleLarge?.copyWith(color: cs.onPrimary),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4.0),
-          child: Container(
-            color: AppColors.lightColor,
-            height: 6.0,
-          ),
+          child: Container(color: cs.secondary, height: 4.0),
         ),
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -191,10 +170,11 @@ class FavoritesView extends StatelessWidget {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No favorites yet.'));
+            return Center(
+              child: Text('No favorites yet.', style: tt.bodyLarge?.copyWith(color: cs.onSurface.withValues(alpha: 0.6))),
+            );
           }
 
-          // Extract product IDs from favorites
           List<String> productIds = snapshot.data!.docs.map((doc) => doc.id).toList();
 
           return FutureBuilder<Map<String, double>>(
@@ -226,7 +206,6 @@ class FavoritesView extends StatelessWidget {
                       final productData = productSnapshot.data!;
                       final storeId = productData['sellerId'] as String;
 
-                      // Fetch store details
                       return FutureBuilder<Map<String, String>>(
                         future: _fetchStoreDetails(storeId),
                         builder: (context, storeSnapshot) {
@@ -234,7 +213,6 @@ class FavoritesView extends StatelessWidget {
                             return const Center(child: CircularProgressIndicator());
                           }
 
-                          // If the product doesn't have a batch, skip
                           return FutureBuilder<bool>(
                             future: _productHasBatch(productId),
                             builder: (context, batchSnapshot) {
@@ -242,7 +220,6 @@ class FavoritesView extends StatelessWidget {
                                 return const Center(child: CircularProgressIndicator());
                               }
 
-                              // If the product doesn't have a batch, skip
                               if (!batchSnapshot.hasData || !batchSnapshot.data!) {
                                 return const SizedBox.shrink();
                               }
@@ -255,7 +232,6 @@ class FavoritesView extends StatelessWidget {
                                 return const SizedBox.shrink();
                               }
 
-                              // Use the provided card styling
                               return _buildProductCard(productData.data() as Map<String, dynamic>, storeName, storeImageUrl,
                                   productId, context, minPrices);
                             },
