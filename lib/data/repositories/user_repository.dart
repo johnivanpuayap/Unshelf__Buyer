@@ -7,7 +7,7 @@ abstract class UserRepository {
 
   /// Writes lat/lng under [collection]/{userId} with merge semantics.
   /// Kept generic because the buyer app currently writes addresses into
-  /// `stores/{uid}` — see AddressViewmodel. Likely a candidate for a dedicated
+  /// `stores/{uid}` — see AddressViewModel. Likely a candidate for a dedicated
   /// `StoresRepository.upsertGeo` in a follow-up cleanup.
   Future<void> upsertLocation({
     required String collection,
