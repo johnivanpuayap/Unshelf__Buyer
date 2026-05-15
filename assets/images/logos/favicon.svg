@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"
+     role="img" aria-labelledby="title desc">
+  <title id="title">Unshelf favicon</title>
+  <desc id="desc">A simplified Unshelf icon for browser tabs — basket with two items, legible at 16px.</desc>
+  <rect width="32" height="32" rx="6" fill="#3F8E4A"/>
+  <g fill="none" stroke="#FFFDF6" stroke-linecap="round">
+    <path d="M 7 14 Q 7 25, 16 25 Q 25 25, 25 14" stroke-width="3"/>
+  </g>
+  <ellipse cx="16" cy="14" rx="10" ry="2.5" fill="#FFFDF6"/>
+  <circle cx="11" cy="11" r="2.8" fill="#FFD27F"/>
+  <circle cx="21" cy="11" r="2.4" fill="#E89A2D"/>
+  <path d="M 16 12 Q 16 6, 14 4" stroke="#FFFDF6" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+</svg>

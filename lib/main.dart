@@ -1,11 +1,11 @@
-import 'package:unshelf_buyer/utils/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' hide ChangeNotifierProvider;
 import 'package:provider/provider.dart';
+import 'package:unshelf_buyer/theme/unshelf_theme.dart';
 import 'package:unshelf_buyer/viewmodels/order_viewmodel.dart';
 import 'package:unshelf_buyer/viewmodels/store_viewmodel.dart';
 import 'package:unshelf_buyer/views/home_view.dart';
@@ -31,14 +31,19 @@ void main() async {
     ),
   );
 
+  // Preload Unshelf theme fonts
+  UnshelfTheme.preloadFonts();
+
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => StoreViewModel("2gxma4nHjhcHsOgDDDarlyeEvy12")), //
-        ChangeNotifierProvider(create: (_) => OrderViewModel()), // OrderViewModel Provider
-        // Add more providers here
-      ],
-      child: const MyApp(),
+    ProviderScope(
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => StoreViewModel("2gxma4nHjhcHsOgDDDarlyeEvy12")), //
+          ChangeNotifierProvider(create: (_) => OrderViewModel()), // OrderViewModel Provider
+          // Add more providers here
+        ],
+        child: const MyApp(),
+      ),
     ),
   );
 }
@@ -51,20 +56,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Unshelf',
-      theme: ThemeData(
-        scaffoldBackgroundColor: Colors.white,
-        appBarTheme: const AppBarTheme(iconTheme: IconThemeData(color: Colors.white)),
-        bottomAppBarTheme: const BottomAppBarTheme(color: Colors.white, shadowColor: Colors.grey, elevation: 20),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Colors.white,
-          selectedItemColor: AppColors.primaryColor,
-          unselectedItemColor: Colors.grey,
-        ),
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryColor),
-        useMaterial3: true,
-        textTheme: GoogleFonts.jostTextTheme(Theme.of(context).textTheme)
-            .apply(displayColor: AppColors.primaryColor, bodyColor: Colors.black),
-      ),
+      theme: UnshelfTheme.light(),
+      darkTheme: UnshelfTheme.dark(),
+      themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
       home: FirebaseAuth.instance.currentUser != null ? HomeView() : LoginView(),
     );

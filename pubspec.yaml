@@ -44,7 +44,7 @@ dependencies:
   image_picker: ^1.1.2
   carousel_slider: ^5.0.0
   cached_network_image: ^3.4.0
-  intl: ^0.19.0
+  intl: 0.20.2
   provider: ^6.1.2
   flutter_svg: ^2.0.10+1
   google_maps_flutter: ^2.9.0
@@ -59,6 +59,8 @@ dependencies:
   pay: ^2.0.0
   loading_indicator: ^3.1.1
   flutter_spinkit: ^5.2.1
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
 
 dev_dependencies:
   flutter_test:
@@ -73,6 +75,10 @@ dev_dependencies:
   mocktail: ^1.0.4
   fake_cloud_firestore: ^3.0.3
   network_image_mock: ^2.1.1
+  riverpod_generator: ^2.4.0
+  build_runner: ^2.4.11
+  custom_lint: ^0.7.3
+  riverpod_lint: ^2.3.10
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -82,4 +88,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/images/logos/
     - .env
