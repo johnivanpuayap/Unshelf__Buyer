@@ -1,5 +1,7 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:unshelf_buyer/providers.dart';
 import 'package:unshelf_buyer/services/wallet_service.dart';
 import 'package:unshelf_buyer/viewmodels/wallet_viewmodel.dart';
 
@@ -8,46 +10,63 @@ class _MockWalletService extends Mock implements WalletService {}
 void main() {
   group('WalletViewModel', () {
     late _MockWalletService mockWallet;
-    late WalletViewModel viewModel;
 
     setUp(() {
       mockWallet = _MockWalletService();
-      viewModel = WalletViewModel(walletService: mockWallet);
     });
 
+    ProviderContainer makeContainer() {
+      final container = ProviderContainer(overrides: [
+        walletServiceProvider.overrideWithValue(mockWallet),
+      ]);
+      addTearDown(container.dispose);
+      return container;
+    }
+
     test('starts with zero balance and no loading', () {
-      expect(viewModel.balance, 0.0);
-      expect(viewModel.isLoading, isFalse);
-      expect(viewModel.errorMessage, isNull);
+      final container = makeContainer();
+      final state = container.read(walletViewModelProvider);
+      expect(state.balance, 0.0);
+      expect(state.isLoading, isFalse);
+      expect(state.errorMessage, isNull);
     });
 
     test('loadBalance populates balance on success', () async {
       when(() => mockWallet.getWalletBalance()).thenAnswer((_) async => 1234.56);
+      final container = makeContainer();
 
-      await viewModel.loadBalance();
+      await container.read(walletViewModelProvider.notifier).loadBalance();
 
-      expect(viewModel.balance, 1234.56);
-      expect(viewModel.errorMessage, isNull);
-      expect(viewModel.isLoading, isFalse);
+      final state = container.read(walletViewModelProvider);
+      expect(state.balance, 1234.56);
+      expect(state.errorMessage, isNull);
+      expect(state.isLoading, isFalse);
     });
 
-    test('loadBalance toggles isLoading true then false', () async {
-      final states = <bool>[];
-      viewModel.addListener(() => states.add(viewModel.isLoading));
+    test('loadBalance sets isLoading true then false', () async {
       when(() => mockWallet.getWalletBalance()).thenAnswer((_) async => 0.0);
+      final container = makeContainer();
 
-      await viewModel.loadBalance();
+      final states = <bool>[];
+      container.listen(
+        walletViewModelProvider.select((s) => s.isLoading),
+        (_, next) => states.add(next),
+      );
+
+      await container.read(walletViewModelProvider.notifier).loadBalance();
 
       expect(states, containsAllInOrder([true, false]));
     });
 
     test('loadBalance sets errorMessage on failure', () async {
       when(() => mockWallet.getWalletBalance()).thenThrow(Exception('http 500'));
+      final container = makeContainer();
 
-      await viewModel.loadBalance();
+      await container.read(walletViewModelProvider.notifier).loadBalance();
 
-      expect(viewModel.errorMessage, contains('Failed to load balance'));
-      expect(viewModel.isLoading, isFalse);
+      final state = container.read(walletViewModelProvider);
+      expect(state.errorMessage, contains('Failed to load balance'));
+      expect(state.isLoading, isFalse);
     });
   });
 }
