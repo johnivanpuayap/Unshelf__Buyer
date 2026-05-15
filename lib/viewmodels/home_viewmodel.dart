@@ -1,10 +1,17 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:unshelf_buyer/data/repositories/product_repository.dart';
+import 'package:unshelf_buyer/data/repositories/storage_repository.dart';
 
 class HomeViewModel extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  HomeViewModel({
+    required ProductRepository productRepository,
+    required StorageRepository storageRepository,
+  })  : _productRepository = productRepository,
+        _storageRepository = storageRepository;
+
+  final ProductRepository _productRepository;
+  final StorageRepository _storageRepository;
 
   List<DocumentSnapshot> _searchResults = [];
   List<String> _bannerUrls = [];
@@ -14,34 +21,23 @@ class HomeViewModel extends ChangeNotifier {
   List<String> get bannerUrls => _bannerUrls;
   bool get isSearching => _isSearching;
 
-  // Fetch Banner URLs from Firebase Storage
   Future<void> fetchBannerUrls() async {
     try {
-      final ListResult result = await _storage.ref('banner_images').listAll();
-      _bannerUrls = await Future.wait(
-        result.items.map((ref) => ref.getDownloadURL()).toList(),
-      );
+      _bannerUrls = await _storageRepository.listDownloadUrls('banner_images');
     } catch (e) {
-      print('Error fetching banners: $e');
+      debugPrint('fetchBannerUrls failed: $e');
       _bannerUrls = [];
     }
     notifyListeners();
   }
 
-  // Perform Product Search
   Future<void> performSearch(String query) async {
     _isSearching = true;
     notifyListeners();
     try {
-      final searchResults = await _firestore
-          .collection('products')
-          .where('name', isGreaterThanOrEqualTo: query)
-          .where('name', isLessThanOrEqualTo: query + '\uf8ff')
-          .get();
-
-      _searchResults = searchResults.docs;
+      _searchResults = await _productRepository.searchByName(query);
     } catch (e) {
-      print('Search error: $e');
+      debugPrint('performSearch failed: $e');
       _searchResults = [];
     } finally {
       _isSearching = false;
@@ -49,11 +45,6 @@ class HomeViewModel extends ChangeNotifier {
     }
   }
 
-  Stream<QuerySnapshot> getBundles() {
-    return _firestore.collection('bundles').snapshots();
-  }
-
-  Stream<QuerySnapshot> getProducts() {
-    return _firestore.collection('products').snapshots();
-  }
+  Stream<QuerySnapshot> getProducts() => _productRepository.watchProducts();
+  Stream<QuerySnapshot> getBundles() => _productRepository.watchBundles();
 }
