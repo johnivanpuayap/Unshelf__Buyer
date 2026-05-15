@@ -33,7 +33,7 @@ Other work — payments cleanup (Stripe → PayMongo), full test coverage, store
 |---|---|
 | Repo | `personal-projects/unshelf-buyer/` (renamed from `Unshelf__Buyer` on 2026-05-16) |
 | GitHub | https://github.com/johnivanpuayap/unshelf-buyer |
-| Branch strategy | Phase-end checkpoints land directly on `main`; no feature branch |
+| Branch strategy | One branch per phase. Merge to `main` via PR at phase exit. |
 | Brand kit consumption | Git submodule at `brand-kit/` |
 | State management | Riverpod 2.x with `@riverpod` codegen |
 | Maps | `flutter_map` + OSM tiles + Nominatim geocoding |
@@ -166,7 +166,10 @@ These each belong to follow-up sub-projects.
 - Git identity for this repo: personal (`johnivanpuayap@gmail.com`) — already configured.
 - No `Co-Authored-By` trailers in commits (per user preference).
 - Atomic commits with Conventional Commits prefixes.
-- Phase-end commits push to `origin/main` directly (no feature branch — per user preference for push-frequently).
+- One branch per phase: `phase/1-foundation`, `phase/2-riverpod-migration`, `phase/3-screen-retheme`, `phase/4-maps-swap`.
+- Each task commits to the current phase branch and pushes after every commit (per user push-frequently preference).
+- At phase exit (all phase tasks complete + manual smoke test passes), open a PR via `gh pr create` for that phase branch into `main`. Merge via `gh pr merge --squash` (or `--merge` if you'd prefer to preserve per-task commits — call it out before merging). Delete the branch after merge.
+- Next phase branches off the freshly-merged `main`.
 
 ## Risks & mitigations
 
