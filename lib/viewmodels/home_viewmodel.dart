@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:unshelf_buyer/data/repositories/product_repository.dart';
@@ -62,4 +63,10 @@ class HomeViewModel extends _$HomeViewModel {
 
   Stream<QuerySnapshot> getProducts() => _productRepository.watchProducts();
   Stream<QuerySnapshot> getBundles() => _productRepository.watchBundles();
+
+  /// Returns a stream of all seller store documents.
+  Stream<QuerySnapshot> getStores() {
+    final firestore = FirebaseFirestore.instance;
+    return firestore.collection('stores').snapshots();
+  }
 }
