@@ -76,10 +76,13 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: const Text('Sign In'),
+        backgroundColor: cs.surface,
+        title: Text('Sign In', style: tt.titleMedium),
       ),
       resizeToAvoidBottomInset: false,
       body: Padding(
@@ -117,15 +120,15 @@ class _LoginViewState extends State<LoginView> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _Login,
-                child: const Text('Sign In'),
+                child: Text('Sign In', style: tt.labelLarge?.copyWith(color: cs.onPrimary)),
               ),
               const SizedBox(height: 20),
-              const Text("Don't have an account?"),
+              Text("Don't have an account?", style: tt.bodyMedium),
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const RegisterView()));
                 },
-                child: const Text('Sign Up'),
+                child: Text('Sign Up', style: tt.labelLarge?.copyWith(color: cs.onPrimary)),
               ),
             ],
           ),

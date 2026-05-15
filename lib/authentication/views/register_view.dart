@@ -32,21 +32,6 @@ class _RegisterViewState extends State<RegisterView> {
         'isBanned': false,
         'points': 0,
       });
-
-      // await FirebaseFirestore.instance.collection('stores').doc(user.uid).set({
-      //   'store_name': storeName,
-      //   'store_schedule': {
-      //     'Monday': {'open': 'Closed', 'close': 'Closed'},
-      //     'Tuesday': {'open': 'Closed', 'close': 'Closed'},
-      //     'Wednesday': {'open': 'Closed', 'close': 'Closed'},
-      //     'Thursday': {'open': 'Closed', 'close': 'Closed'},
-      //     'Friday': {'open': 'Closed', 'close': 'Closed'},
-      //     'Saturday': {'open': 'Closed', 'close': 'Closed'},
-      //     'Sunday': {'open': 'Closed', 'close': 'Closed'},
-      //   },
-      //   'longitude': 0,
-      //   'latitude': 0,
-      // });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to create user data')),
@@ -95,9 +80,12 @@ class _RegisterViewState extends State<RegisterView> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register'),
+        title: Text('Register', style: tt.titleMedium),
       ),
       resizeToAvoidBottomInset: false,
       body: Padding(
@@ -168,29 +156,22 @@ class _RegisterViewState extends State<RegisterView> {
                   return null;
                 },
               ),
-              // TextFormField(
-              //   controller: _storeNameController,
-              //   decoration: const InputDecoration(labelText: 'Store Name'),
-              //   validator: (value) {
-              //     if (value == null || value.isEmpty) {
-              //       return 'Please enter your store name';
-              //     }
-              //     return null;
-              //   },
-              // ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _register,
-                child: const Text('Sign Up'),
+                child: Text('Sign Up', style: tt.labelLarge?.copyWith(color: cs.onPrimary)),
               ),
-              const Text("By signing up, you agree to Unshelf's Terms of Use and Privacy Policy"),
+              Text(
+                "By signing up, you agree to Unshelf's Terms of Use and Privacy Policy",
+                style: tt.bodySmall,
+              ),
               const SizedBox(height: 20),
-              const Text('Already have an account?'),
+              Text('Already have an account?', style: tt.bodyMedium),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => LoginView()));
                 },
-                child: const Text('Sign In'),
+                child: Text('Sign In', style: tt.labelLarge?.copyWith(color: cs.primary)),
               ),
             ],
           ),
