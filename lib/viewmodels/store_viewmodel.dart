@@ -1,106 +1,87 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:unshelf_buyer/data/repositories/auth_repository.dart';
+import 'package:unshelf_buyer/data/repositories/stores_repository.dart';
+import 'package:unshelf_buyer/data/repositories/user_repository.dart';
 import 'package:unshelf_buyer/models/store_model.dart';
 
-part 'store_viewmodel.g.dart';
+class StoreViewModel extends ChangeNotifier {
+  StoreViewModel({
+    required AuthRepository authRepository,
+    required UserRepository userRepository,
+    required StoresRepository storesRepository,
+  })  : _authRepository = authRepository,
+        _userRepository = userRepository,
+        _storesRepository = storesRepository;
 
-class StoreState {
-  const StoreState({
-    this.storeDetails,
-    this.isLoading = true,
-    this.errorMessage,
-  });
+  final AuthRepository _authRepository;
+  final UserRepository _userRepository;
+  final StoresRepository _storesRepository;
 
-  final StoreModel? storeDetails;
-  final bool isLoading;
-  final String? errorMessage;
-
-  StoreState copyWith({
-    StoreModel? storeDetails,
-    bool? isLoading,
-    String? errorMessage,
-    bool clearError = false,
-    bool clearStoreDetails = false,
-  }) {
-    return StoreState(
-      storeDetails: clearStoreDetails ? null : storeDetails ?? this.storeDetails,
-      isLoading: isLoading ?? this.isLoading,
-      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
-    );
-  }
-}
-
-@riverpod
-class StoreViewModel extends _$StoreViewModel {
-  @override
-  StoreState build(String storeId) {
-    // Kick off data load immediately, just like the old constructor did.
-    Future.microtask(() => fetchStoreDetails(storeId));
-    return const StoreState(isLoading: true);
-  }
+  StoreModel? storeDetails;
+  bool isLoading = false;
+  String? errorMessage;
 
   Future<void> fetchStoreDetails(String storeId) async {
-    User? user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      state = state.copyWith(errorMessage: 'User is not logged in', isLoading: false, clearStoreDetails: true);
+    final userId = _authRepository.currentUserId;
+    if (userId == null) {
+      errorMessage = 'User is not logged in';
+      notifyListeners();
       return;
     }
 
-    state = state.copyWith(isLoading: true);
+    isLoading = true;
+    notifyListeners();
 
     try {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-      DocumentSnapshot storeDoc = await FirebaseFirestore.instance.collection('stores').doc(storeId).get();
+      final userData = await _userRepository.fetchProfile(userId);
+      final storeData = await _storesRepository.fetchById(storeId);
 
-      if (!userDoc.exists || !storeDoc.exists) {
-        state = state.copyWith(
-          errorMessage: 'User profile or store not found',
-          isLoading: false,
-          clearStoreDetails: true,
-        );
+      if (userData == null || storeData == null) {
+        errorMessage = 'User profile or store not found';
+        storeDetails = null;
       } else {
-        state = state.copyWith(
-          storeDetails: StoreModel.fromSnapshot(userDoc, storeDoc),
-          isLoading: false,
-          clearError: true,
+        storeDetails = StoreModel.fromMaps(
+          userId: userId,
+          userData: userData,
+          storeData: storeData,
         );
+        errorMessage = null;
       }
     } catch (e) {
       debugPrint('fetchStoreDetails failed: $e');
-      state = state.copyWith(
-        errorMessage: 'Error fetching user profile: ${e.toString()}',
-        isLoading: false,
-        clearStoreDetails: true,
-      );
+      errorMessage = 'Error fetching user profile: $e';
+      storeDetails = null;
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
   }
 
+  /// NOTE: queries the signed-in user's followers (`users/{currentUserId}/followers`),
+  /// not the viewed store's. Preserved from legacy code — likely a bug; revisit when
+  /// the followers feature gets product-defined.
   Future<int> fetchStoreFollowers() async {
-    User? user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      state = state.copyWith(errorMessage: 'User is not logged in', isLoading: false);
+    final userId = _authRepository.currentUserId;
+    if (userId == null) {
+      errorMessage = 'User is not logged in';
+      notifyListeners();
       return 0;
     }
 
     try {
-      final followersSnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('followers')
-          .get();
-      return followersSnapshot.size;
+      return await _userRepository.fetchFollowersCount(userId);
     } catch (e) {
       debugPrint('fetchStoreFollowers failed: $e');
-      state = state.copyWith(errorMessage: 'Error fetching store followers', isLoading: false);
+      errorMessage = 'Error fetching store followers';
       return 0;
+    } finally {
+      notifyListeners();
     }
   }
 
   void clear() {
-    state = const StoreState(storeDetails: null, isLoading: false, errorMessage: null);
+    storeDetails = null;
+    errorMessage = null;
+    notifyListeners();
   }
 }
