@@ -42,7 +42,7 @@ final class UserProfileViewModelProvider
 }
 
 String _$userProfileViewModelHash() =>
-    r'e168ae7314a5cfec5f552fc36db26d3577fcc29c';
+    r'8c279e5f9c2bd1188b9860cf1cedadcc9332a355';
 
 abstract class _$UserProfileViewModel extends $Notifier<UserProfileState> {
   UserProfileState build();

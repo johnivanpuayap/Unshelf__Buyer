@@ -41,7 +41,7 @@ final class AddressViewModelProvider
   }
 }
 
-String _$addressViewModelHash() => r'181233d09b5f194e7602ac50af5b2c5c14abb0cb';
+String _$addressViewModelHash() => r'631a67ca5e1a6421ca2356d889bc21359cf59c75';
 
 abstract class _$AddressViewModel extends $Notifier<AddressState> {
   AddressState build();

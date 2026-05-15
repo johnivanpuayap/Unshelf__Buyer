@@ -42,7 +42,7 @@ final class OrderAddressViewModelProvider
 }
 
 String _$orderAddressViewModelHash() =>
-    r'5d071110b31f42c280ae9012ecf6621f886c0993';
+    r'e6e7dfd4e2af015442d3a32090b701abc047c787';
 
 abstract class _$OrderAddressViewModel extends $Notifier<OrderAddressState> {
   OrderAddressState build();

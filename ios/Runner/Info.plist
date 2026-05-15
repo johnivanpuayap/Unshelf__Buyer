@@ -59,7 +59,5 @@
 	<string>Unshelf Buyer uses your location to show nearby sellers and near-expired deals around you.</string>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
-	<key>GMSApiKey</key>
-	<string>$(GMS_API_KEY)</string>
 </dict>
 </plist>
