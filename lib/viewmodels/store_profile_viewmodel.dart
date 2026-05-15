@@ -1,77 +1,88 @@
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:unshelf_buyer/models/store_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:unshelf_buyer/models/store_model.dart';
 
-class EditStoreProfileViewModel extends ChangeNotifier {
-  final String storeId; // The ID of the store to update
-  late TextEditingController _nameController;
-  Uint8List? _profileImage;
-  final ImagePicker picker = ImagePicker();
+part 'store_profile_viewmodel.g.dart';
 
-  EditStoreProfileViewModel(StoreModel storeDetails)
-      : storeId = storeDetails.userId {
-    _nameController = TextEditingController(text: storeDetails.storeName);
+class StoreProfileState {
+  StoreProfileState({
+    this.storeName = '',
+    this.profileImage,
+    this.isLoading = false,
+  });
+
+  final String storeName;
+  final Uint8List? profileImage;
+  final bool isLoading;
+
+  StoreProfileState copyWith({
+    String? storeName,
+    Uint8List? profileImage,
+    bool? isLoading,
+    bool clearImage = false,
+  }) {
+    return StoreProfileState(
+      storeName: storeName ?? this.storeName,
+      profileImage: clearImage ? null : profileImage ?? this.profileImage,
+      isLoading: isLoading ?? this.isLoading,
+    );
+  }
+}
+
+@riverpod
+class StoreProfileViewModel extends _$StoreProfileViewModel {
+  final ImagePicker _picker = ImagePicker();
+
+  @override
+  StoreProfileState build(StoreModel storeDetails) {
+    return StoreProfileState(storeName: storeDetails.storeName);
   }
 
-  TextEditingController get nameController => _nameController;
-  Uint8List? get profileImage => _profileImage;
-
-  get isLoading => _loading;
-  bool _loading = false;
+  void updateStoreName(String name) {
+    state = state.copyWith(storeName: name);
+  }
 
   Future<void> pickImage() async {
-    XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       final Uint8List imageData = await image.readAsBytes();
-      _profileImage = imageData;
-      notifyListeners();
+      state = state.copyWith(profileImage: imageData);
     }
   }
 
   Future<void> updateStoreProfile() async {
-    _loading = true;
-    if (_nameController.text.isNotEmpty) {
-      try {
-        // Update store details in Firestore
-        final storeRef =
-            FirebaseFirestore.instance.collection('stores').doc(storeId);
-        final updateData = {
-          'store_name': _nameController.text,
-          // Handle image upload if a new image is selected
-        };
+    if (state.storeName.isEmpty) return;
 
-        if (_profileImage != null) {
-          // Assuming you have a method to upload the image and get the URL
-          final imageUrl = await uploadImage(_profileImage!);
-          updateData['store_image_url'] = imageUrl;
-        }
+    state = state.copyWith(isLoading: true);
+    try {
+      final storeRef = FirebaseFirestore.instance
+          .collection('stores')
+          .doc(storeDetails.userId);
+      final updateData = <String, dynamic>{
+        'store_name': state.storeName,
+      };
 
-        await storeRef.update(updateData);
-        _loading = false;
-        notifyListeners(); // Notify listeners if necessary
-      } catch (e) {
-        // Handle errors
-        print('Error updating store profile: $e');
+      if (state.profileImage != null) {
+        final imageUrl = await _uploadImage(state.profileImage!);
+        updateData['store_image_url'] = imageUrl;
       }
+
+      await storeRef.update(updateData);
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      debugPrint('updateStoreProfile failed: $e');
+      state = state.copyWith(isLoading: false);
     }
   }
 
-  Future<String> uploadImage(Uint8List? image) async {
+  Future<String> _uploadImage(Uint8List image) async {
     final userId = FirebaseAuth.instance.currentUser!.uid;
-    final mainImageRef =
-        FirebaseStorage.instance.ref().child('user_avatars/$userId.jpg');
-    await mainImageRef.putData(image!);
-    final mainImageUrl = await mainImageRef.getDownloadURL();
-    return mainImageUrl;
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
+    final ref = FirebaseStorage.instance.ref().child('user_avatars/$userId.jpg');
+    await ref.putData(image);
+    return ref.getDownloadURL();
   }
 }
