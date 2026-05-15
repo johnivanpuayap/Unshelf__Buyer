@@ -1,91 +1,116 @@
-import 'package:flutter/foundation.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:unshelf_buyer/models/order_model.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:http/http.dart' as http;
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:unshelf_buyer/models/order_model.dart';
 
-class OrderViewModel extends ChangeNotifier {
-  List<OrderModel> _orders = [];
-  OrderStatus _currentStatus = OrderStatus.all;
-  OrderModel? _selectedOrder;
-  bool _isLoading = false;
-  Map<String, dynamic>? paymentIntentData;
+part 'order_viewmodel.g.dart';
 
-  OrderModel? get selectedOrder => _selectedOrder;
-  List<OrderModel> get orders => _orders;
-  OrderStatus get currentStatus => _currentStatus;
-  bool get isLoading => _isLoading;
+class OrderState {
+  const OrderState({
+    this.orders = const [],
+    this.currentStatus = OrderStatus.all,
+    this.selectedOrder,
+    this.isLoading = false,
+    this.paymentIntentData,
+  });
 
-  late Future<void> fetchOrdersFuture;
-
-  OrderViewModel() {
-    fetchOrdersFuture = fetchOrders();
-  }
+  final List<OrderModel> orders;
+  final OrderStatus currentStatus;
+  final OrderModel? selectedOrder;
+  final bool isLoading;
+  final Map<String, dynamic>? paymentIntentData;
 
   List<OrderModel> get filteredOrders {
-    if (_currentStatus == OrderStatus.all) {
-      return _orders;
-    }
-    return _orders.where((order) => order.status == _currentStatus).toList();
+    if (currentStatus == OrderStatus.all) return orders;
+    return orders.where((o) => o.status == currentStatus).toList();
+  }
+
+  OrderState copyWith({
+    List<OrderModel>? orders,
+    OrderStatus? currentStatus,
+    OrderModel? selectedOrder,
+    bool clearSelectedOrder = false,
+    bool? isLoading,
+    Map<String, dynamic>? paymentIntentData,
+    bool clearPaymentIntent = false,
+  }) {
+    return OrderState(
+      orders: orders ?? this.orders,
+      currentStatus: currentStatus ?? this.currentStatus,
+      selectedOrder: clearSelectedOrder ? null : selectedOrder ?? this.selectedOrder,
+      isLoading: isLoading ?? this.isLoading,
+      paymentIntentData:
+          clearPaymentIntent ? null : paymentIntentData ?? this.paymentIntentData,
+    );
+  }
+}
+
+@riverpod
+class OrderViewModel extends _$OrderViewModel {
+  @override
+  OrderState build() {
+    Future.microtask(() => fetchOrders());
+    return const OrderState(isLoading: true);
   }
 
   Future<void> fetchOrders() async {
-    _isLoading = true;
-    notifyListeners();
+    state = state.copyWith(isLoading: true);
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        throw Exception('User not logged in');
-      }
+      if (user == null) throw Exception('User not logged in');
 
       final querySnapshot = await FirebaseFirestore.instance
           .collection('orders')
-          .where('seller_id', isEqualTo: FirebaseFirestore.instance.doc('users/${user.uid}'))
+          .where('seller_id',
+              isEqualTo: FirebaseFirestore.instance.doc('users/${user.uid}'))
           .orderBy('created_at', descending: true)
           .get();
 
-      _orders = await Future.wait<OrderModel>(querySnapshot.docs.map((doc) => OrderModel.fetchOrderWithProducts(doc)).toList());
+      final orders = await Future.wait<OrderModel>(
+          querySnapshot.docs.map((doc) => OrderModel.fetchOrderWithProducts(doc)).toList());
 
-      _isLoading = false;
-      notifyListeners();
+      state = state.copyWith(orders: orders, isLoading: false);
     } catch (e) {
-      print('Failed to fetch orders: $e');
+      debugPrint('fetchOrders failed: $e');
+      state = state.copyWith(isLoading: false);
     }
   }
 
   OrderModel? selectOrder(String orderId) {
-    _isLoading = true;
-    _selectedOrder = _orders.firstWhere((order) => order.id == orderId);
-    _isLoading = false;
-    notifyListeners();
-    return _selectedOrder;
+    final order = state.orders.firstWhere((o) => o.id == orderId);
+    state = state.copyWith(selectedOrder: order);
+    return order;
   }
 
   void filterOrdersByStatus(String? status) {
+    OrderStatus newStatus;
     if (status == null || status == 'All') {
-      _currentStatus = OrderStatus.all;
+      newStatus = OrderStatus.all;
     } else if (status == 'Pending') {
-      _currentStatus = OrderStatus.pending;
+      newStatus = OrderStatus.pending;
     } else if (status == 'Completed') {
-      _currentStatus = OrderStatus.completed;
+      newStatus = OrderStatus.completed;
     } else if (status == 'Ready') {
-      _currentStatus = OrderStatus.ready;
+      newStatus = OrderStatus.ready;
+    } else {
+      newStatus = OrderStatus.all;
     }
-    notifyListeners();
+    state = state.copyWith(currentStatus: newStatus);
   }
 
-  // Function to initiate payment process
   Future<void> makePayment(String amount) async {
     try {
-      paymentIntentData = await createPaymentIntent(amount, 'PHP');
+      final intentData = await createPaymentIntent(amount, 'PHP');
+      state = state.copyWith(paymentIntentData: intentData);
 
-      // Initialize payment sheet
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
-          paymentIntentClientSecret: paymentIntentData!['client_secret'],
+          paymentIntentClientSecret: intentData['client_secret'],
           merchantDisplayName: 'Unshelf',
           googlePay: const PaymentSheetGooglePay(
             merchantCountryCode: 'US',
@@ -94,92 +119,74 @@ class OrderViewModel extends ChangeNotifier {
         ),
       );
 
-      // Display payment sheet
       await displayPaymentSheet();
     } catch (error) {
-      paymentIntentData = null;
-      print('Error in makePayment: $error');
+      state = state.copyWith(clearPaymentIntent: true);
+      debugPrint('makePayment error: $error');
       rethrow;
     }
   }
 
-  // Create payment intent
-  Future<Map<String, dynamic>> createPaymentIntent(String amount, String currency) async {
-    String secretKey = dotenv.env['stripeSecretKey'] ?? '';
+  Future<Map<String, dynamic>> createPaymentIntent(
+      String amount, String currency) async {
+    final secretKey = dotenv.env['stripeSecretKey'] ?? '';
     try {
-      Map<String, dynamic> body = {
-        'amount': (double.parse(amount).floor() * 100).toString(), // Amount in cents
-        'currency': currency,
-      };
-
-      var response = await http.post(
+      final response = await http.post(
         Uri.parse('https://api.stripe.com/v1/payment_intents'),
-        body: body,
+        body: {
+          'amount': (double.parse(amount).floor() * 100).toString(),
+          'currency': currency,
+        },
         headers: {
-          'Authorization': 'Bearer ${secretKey}',
+          'Authorization': 'Bearer $secretKey',
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       );
-      ("Payment Intent Response: ${response.body}");
-      return json.decode(response.body);
+      return json.decode(response.body) as Map<String, dynamic>;
     } catch (error) {
-      print('Error in createPaymentIntent: $error');
+      debugPrint('createPaymentIntent error: $error');
       rethrow;
     }
   }
 
-  // Display the Stripe payment sheet
   Future<void> displayPaymentSheet() async {
     try {
-      ("inside displayPaymentSheet - start");
-
-      await Stripe.instance.presentPaymentSheet().then((value) {
-        ("inside displayPaymentSheet - present");
-      }).catchError((error) {
-        ("Error presenting payment sheet: $error");
-      });
-
-      await Stripe.instance.confirmPaymentSheetPayment().then((value) {
-        ("inside displayPaymentSheet - confirm");
-      }).catchError((error) {
-        ("Error confirming payment: $error");
-      });
-
-      // Update order status to 'paid' once the payment is successful
+      await Stripe.instance.presentPaymentSheet();
+      await Stripe.instance.confirmPaymentSheetPayment();
       await updateOrderStatusToPaid();
-
-      ("inside displayPaymentSheet - updated");
-      paymentIntentData = null;
-      notifyListeners();
+      state = state.copyWith(clearPaymentIntent: true);
     } catch (error) {
-      ('Error in displayPaymentSheet: $error');
+      debugPrint('displayPaymentSheet error: $error');
     }
   }
 
-  // Update the order status to "Paid"
   Future<void> updateOrderStatusToPaid() async {
-    if (_selectedOrder != null) {
+    final selected = state.selectedOrder;
+    if (selected != null) {
       try {
-        // Update order status in Firestore
-        await FirebaseFirestore.instance.collection('orders').doc(_selectedOrder!.id).update({
-          'is_paid': true,
-        });
-
-        // Update locally as well
-        _selectedOrder!.is_paid = true;
-        notifyListeners();
+        await FirebaseFirestore.instance
+            .collection('orders')
+            .doc(selected.id)
+            .update({'is_paid': true});
+        selected.is_paid = true;
       } catch (e) {
-        print('Error updating order status: $e');
+        debugPrint('updateOrderStatusToPaid error: $e');
       }
     }
   }
 
-  // New method to handle the full order process
-  Future<bool> processOrderAndPayment(String buyerId, List<Map<String, dynamic>> basketItems, String sellerId, String orderId,
-      double totalAmount, DateTime? pickupDateTime, bool usePoints, int points) async {
+  Future<bool> processOrderAndPayment(
+    String buyerId,
+    List<Map<String, dynamic>> basketItems,
+    String sellerId,
+    String orderId,
+    double totalAmount,
+    DateTime? pickupDateTime,
+    bool usePoints,
+    int points,
+  ) async {
     try {
-      // Add order to firestore
-      DocumentReference orderRef = await FirebaseFirestore.instance.collection('orders').add({
+      final orderRef = await FirebaseFirestore.instance.collection('orders').add({
         'buyerId': buyerId,
         'completedAt': null,
         'createdAt': DateTime.now(),
@@ -194,57 +201,58 @@ class OrderViewModel extends ChangeNotifier {
                 })
             .toList(),
         'sellerId': sellerId,
-        'status': "Pending",
+        'status': 'Pending',
         'subTotal': usePoints ? totalAmount + points : totalAmount,
         'totalPrice': totalAmount,
         'pickupTime': Timestamp.fromDate(pickupDateTime!),
-        'pointsDiscount': usePoints ? points : 0
+        'pointsDiscount': usePoints ? points : 0,
       });
 
-      // Process the payment
       await makePayment(totalAmount.toString());
-
-      // If payment is successful, mark order as paid
       await orderRef.update({'isPaid': true});
 
-      // Remove items from user's basket
       for (var item in basketItems) {
-        String batchId = item['batchId'];
-        int quantity = item['quantity'];
+        final String batchId = item['batchId'];
+        final int quantity = item['quantity'];
 
-        // Fetch the batch document if batch
-        DocumentSnapshot batchSnapshot = await FirebaseFirestore.instance.collection('batches').doc(batchId).get();
+        final batchSnapshot =
+            await FirebaseFirestore.instance.collection('batches').doc(batchId).get();
 
         if (batchSnapshot.exists) {
-          Map<String, dynamic>? batchData = batchSnapshot.data() as Map<String, dynamic>?;
-          int currentStock = batchData?['stock'] ?? 0;
-          // Update the stock for the batch
-          int newStock = currentStock - quantity;
-          if (newStock < 0) {
-            throw Exception('Insufficient stokk for batch $batchId');
-          }
-          await FirebaseFirestore.instance.collection('batches').doc(batchId).update({'stock': newStock});
+          final batchData = batchSnapshot.data() as Map<String, dynamic>?;
+          final int currentStock = batchData?['stock'] ?? 0;
+          final int newStock = currentStock - quantity;
+          if (newStock < 0) throw Exception('Insufficient stock for batch $batchId');
+          await FirebaseFirestore.instance
+              .collection('batches')
+              .doc(batchId)
+              .update({'stock': newStock});
         } else {
-          DocumentSnapshot bundleSnapshot = await FirebaseFirestore.instance.collection('bundles').doc(batchId).get();
+          final bundleSnapshot =
+              await FirebaseFirestore.instance.collection('bundles').doc(batchId).get();
           if (bundleSnapshot.exists) {
-            Map<String, dynamic>? bundleData = bundleSnapshot.data() as Map<String, dynamic>?;
-            int currentStock = bundleData?['stock'] ?? 0;
-            // Update the stock for the batch
-            int newStock = currentStock - quantity;
-            if (newStock < 0) {
-              throw Exception('Insufficient stock for bundle $batchId');
-            }
-            await FirebaseFirestore.instance.collection('bundles').doc(batchId).update({'stock': newStock});
+            final bundleData = bundleSnapshot.data() as Map<String, dynamic>?;
+            final int currentStock = bundleData?['stock'] ?? 0;
+            final int newStock = currentStock - quantity;
+            if (newStock < 0) throw Exception('Insufficient stock for bundle $batchId');
+            await FirebaseFirestore.instance
+                .collection('bundles')
+                .doc(batchId)
+                .update({'stock': newStock});
           }
         }
 
-        // Remove the item from the user's cart
-        await FirebaseFirestore.instance.collection('baskets').doc(buyerId).collection('cart_items').doc(batchId).delete();
+        await FirebaseFirestore.instance
+            .collection('baskets')
+            .doc(buyerId)
+            .collection('cart_items')
+            .doc(batchId)
+            .delete();
       }
 
       return true;
     } catch (e) {
-      print('Error during order and payment process: $e');
+      debugPrint('processOrderAndPayment error: $e');
       return false;
     }
   }
