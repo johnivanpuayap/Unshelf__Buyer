@@ -1,240 +1,266 @@
+/// OrderHistoryView — tabbed order history: Active / Completed / Cancelled.
+///
+/// Layout:
+///   • AppBar: back + "Your orders"
+///   • TabBar: Active | Completed | Cancelled (primary green active state)
+///   • TabBarView: list of OrderCard per tab, with EmptyStateView per tab
+///   • Loading + error states
+library;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:unshelf_buyer/views/home_view.dart';
-import 'package:unshelf_buyer/views/map_view.dart';
-import 'package:unshelf_buyer/views/profile_view.dart';
+import 'package:unshelf_buyer/components/empty_state_view.dart';
+import 'package:unshelf_buyer/components/order_card.dart';
+import 'package:unshelf_buyer/views/order_details_view.dart';
+
+// ─── Active statuses ──────────────────────────────────────────────────────────
+
+const _activeStatuses = ['Pending', 'Confirmed', 'Preparing', 'Ready'];
+const _completedStatuses = ['Completed'];
+const _cancelledStatuses = ['Cancelled'];
 
 class OrderHistoryView extends StatelessWidget {
-  const OrderHistoryView({Key? key}) : super(key: key);
+  const OrderHistoryView({super.key});
 
-  Future<Map<String, dynamic>> fetchOrderDetails(String orderId) async {
-    final orderSnapshot = await FirebaseFirestore.instance.collection('orders').doc(orderId).get();
-    final orderData = orderSnapshot.data();
-
-    if (orderData != null) {
-      final storeSnapshot = await FirebaseFirestore.instance.collection('stores').doc(orderData['sellerId']).get();
-      final storeData = storeSnapshot.data();
-
-      final List<Map<String?, dynamic>> orderItemsDetails = [];
-
-      for (var item in orderData['orderItems']) {
-        final productSnapshot = await FirebaseFirestore.instance.collection('products').doc(item['productId']).get();
-        final productData = productSnapshot.data();
-
-        if (productData != null) {
-          orderItemsDetails.add({
-            'name': productData['name'],
-            'price': productData['price'],
-            'mainImageUrl': productData['mainImageUrl'],
-            'quantity': item['quantity'],
-            'quantifier': productData['quantifier'],
-          });
-        } else {}
-      }
-
-      // Here, we ensure that the total is returned as an int by using .toInt()
-      final int total = orderItemsDetails.fold<num>(0, (sum, item) => sum + item['price'] * item['quantity']).toInt();
-
-      return {
-        'storeName': storeData?['store_name'] ?? '',
-        'storeImageUrl': storeData?['store_image_url'] ?? '',
-        'orderItems': orderItemsDetails,
-        'createdAt': orderData['createdAt'].toDate(),
-        'totalPrice': orderData['totalPrice'],
-        'pickupTime': orderData['pickupTime'],
-      };
-    }
-    return {};
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 3,
+      child: _OrderHistoryScaffold(),
+    );
   }
+}
 
+class _OrderHistoryScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final FirebaseAuth _auth = FirebaseAuth.instance;
+
     return Scaffold(
+      backgroundColor: cs.surface,
       appBar: AppBar(
         backgroundColor: cs.primary,
+        foregroundColor: cs.onPrimary,
         elevation: 0,
-        toolbarHeight: 65,
+        toolbarHeight: 60,
         title: Text(
-          "Order History",
-          style: tt.titleLarge?.copyWith(color: cs.onPrimary),
+          'Your orders',
+          style: tt.titleLarge?.copyWith(
+            color: cs.onPrimary,
+            fontFamily: 'DMSerifDisplay',
+          ),
+        ),
+        bottom: TabBar(
+          indicatorColor: cs.onPrimary,
+          indicatorWeight: 3,
+          labelColor: cs.onPrimary,
+          unselectedLabelColor: cs.onPrimary.withValues(alpha: 0.55),
+          labelStyle: tt.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+          unselectedLabelStyle: tt.labelLarge,
+          tabs: const [
+            Tab(text: 'Active'),
+            Tab(text: 'Completed'),
+            Tab(text: 'Cancelled'),
+          ],
         ),
       ),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection('orders')
-            .where('buyerId', isEqualTo: _auth.currentUser!.uid)
-            .where('status', isEqualTo: 'Completed')
-            .snapshots(),
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final orders = snapshot.data?.docs ?? [];
-
-          return ListView.builder(
-            itemCount: orders.length,
-            itemBuilder: (context, index) {
-              final orderId = orders[index].id;
-              return FutureBuilder<Map<String?, dynamic>>(
-                future: fetchOrderDetails(orderId),
-                builder: (context, orderSnapshot) {
-                  if (!orderSnapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  final orderDetails = orderSnapshot.data!;
-                  final storeName = orderDetails['storeName'];
-                  final storeImageUrl = orderDetails['storeImageUrl'];
-                  final total = orderDetails['totalPrice'];
-                  final pickupTime = orderDetails['pickupTime'];
-                  final orderItems = orderDetails['orderItems'];
-                  final createdAt = orderDetails['createdAt'];
-
-                  return Card(
-                    elevation: 0,
-                    margin: EdgeInsets.zero,
-                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ListTile(
-                          leading: CircleAvatar(
-                            radius: 24,
-                            backgroundImage: NetworkImage(storeImageUrl),
-                          ),
-                          title: Text(storeName, style: tt.titleMedium),
-                        ),
-                        const Divider(height: 1),
-                        ListTile(
-                          subtitle: Text(
-                            "Ordered On: $createdAt\nPickup Time: $pickupTime",
-                            style: tt.bodySmall?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
-                          ),
-                        ),
-                        const Divider(height: 1),
-                        ...orderItems.map<Widget>((item) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                            child: Row(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(item['mainImageUrl'], width: 60, height: 60, fit: BoxFit.cover),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item['name'],
-                                        style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-                                      ),
-                                      Text(
-                                        'PHP ${item['price']} / ${item['quantifier']}',
-                                        style: tt.bodySmall?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
-                                      ),
-                                      Text(
-                                        'x${item['quantity']}',
-                                        style: tt.bodySmall?.copyWith(color: cs.onSurface.withValues(alpha: 0.6)),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Text(
-                                  '₱${(item['price'] * item['quantity']).toStringAsFixed(2)}',
-                                  style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                        const Divider(height: 1),
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(
-                                "Total: ₱${total.toStringAsFixed(2)}",
-                                style: tt.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Divider(thickness: 8, color: cs.surfaceContainerHighest),
-                      ],
-                    ),
-                  );
-                },
-              );
-            },
-          );
-        },
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        onTap: (index) => _onItemTapped(context, index),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.location_on),
-            label: 'Near Me',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+      body: const TabBarView(
+        children: [
+          _OrderTab(statuses: _activeStatuses),
+          _OrderTab(statuses: _completedStatuses),
+          _OrderTab(statuses: _cancelledStatuses),
         ],
       ),
     );
   }
 }
 
-void _onItemTapped(BuildContext context, int index) {
-  switch (index) {
-    case 0:
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (BuildContext context, Animation<double> animation1, Animation<double> animation2) {
-            return HomeView();
-          },
-          transitionDuration: Duration.zero,
-          reverseTransitionDuration: Duration.zero,
+// ─── Single tab ───────────────────────────────────────────────────────────────
+
+class _OrderTab extends StatelessWidget {
+  const _OrderTab({required this.statuses});
+  final List<String> statuses;
+
+  String get _emptyHeadline {
+    if (statuses.contains('Pending')) return 'No active orders';
+    if (statuses.contains('Completed')) return 'No completed orders';
+    return 'No cancelled orders';
+  }
+
+  String get _emptyBody {
+    if (statuses.contains('Pending')) {
+      return 'Orders you place will appear here.';
+    }
+    if (statuses.contains('Completed')) {
+      return 'Completed orders will appear here.';
+    }
+    return 'Cancelled orders will appear here.';
+  }
+
+  IconData get _emptyIcon {
+    if (statuses.contains('Pending')) return Icons.receipt_long_outlined;
+    if (statuses.contains('Completed')) return Icons.check_circle_outline;
+    return Icons.cancel_outlined;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      return Center(
+        child: EmptyStateView(
+          icon: Icons.lock_outline,
+          headline: 'Not signed in',
+          body: 'Sign in to view your orders.',
         ),
       );
-      break;
-    case 1:
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (BuildContext context, Animation<double> animation1, Animation<double> animation2) {
-            return MapPage();
+    }
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('orders')
+          .where('buyerId', isEqualTo: uid)
+          .where('status', whereIn: statuses)
+          .orderBy('createdAt', descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(
+            child: EmptyStateView(
+              icon: Icons.error_outline,
+              headline: 'Something went wrong',
+              body: snapshot.error.toString(),
+            ),
+          );
+        }
+
+        final docs = snapshot.data?.docs ?? [];
+
+        if (docs.isEmpty) {
+          return Center(
+            child: EmptyStateView(
+              icon: _emptyIcon,
+              headline: _emptyHeadline,
+              body: _emptyBody,
+            ),
+          );
+        }
+
+        return ListView.separated(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          itemCount: docs.length,
+          separatorBuilder: (_, __) => const SizedBox.shrink(),
+          itemBuilder: (context, index) {
+            return _OrderCardLoader(doc: docs[index]);
           },
-          transitionDuration: Duration.zero,
-          reverseTransitionDuration: Duration.zero,
-        ),
-      );
-      break;
-    case 2:
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (BuildContext context, Animation<double> animation1, Animation<double> animation2) {
-            return ProfileView();
+        );
+      },
+    );
+  }
+}
+
+// ─── Per-order async loader ───────────────────────────────────────────────────
+
+class _OrderCardLoader extends StatelessWidget {
+  const _OrderCardLoader({required this.doc});
+  final DocumentSnapshot doc;
+
+  Future<Map<String, dynamic>> _fetchDetails() async {
+    final data = doc.data() as Map<String, dynamic>;
+
+    final storeSnap = await FirebaseFirestore.instance
+        .collection('stores')
+        .doc(data['sellerId'] as String?)
+        .get();
+    final storeData = storeSnap.data();
+
+    final List<Map<String, dynamic>> items = [];
+    for (final item
+        in (data['orderItems'] as List<dynamic>? ?? [])) {
+      final batchSnap = await FirebaseFirestore.instance
+          .collection('batches')
+          .doc(item['batchId'] as String?)
+          .get();
+      final batchData = batchSnap.data();
+      if (batchData != null) {
+        final productSnap = await FirebaseFirestore.instance
+            .collection('products')
+            .doc(batchData['productId'] as String?)
+            .get();
+        final productData = productSnap.data();
+        if (productData != null) {
+          items.add({
+            'name': productData['name'] ?? '',
+            'price': batchData['price'] ?? 0.0,
+            'mainImageUrl': productData['mainImageUrl'] ?? '',
+            'quantity': item['quantity'] ?? 1,
+            'quantifier': productData['quantifier'] ?? '',
+            'batchDiscount': batchData['discount'],
+            'expiryDate': batchData['expiryDate'],
+          });
+        }
+      }
+    }
+
+    return {
+      'storeName': storeData?['store_name'] ?? '',
+      'storeImageUrl':
+          storeData?['store_image_url'] ?? storeData?['storeImageUrl'] ?? '',
+      'storeId': data['sellerId'] ?? '',
+      'docId': doc.id,
+      'orderId': data['orderId'] ?? doc.id,
+      'orderItems': items,
+      'status': data['status'] ?? '',
+      'isPaid': data['isPaid'] ?? false,
+      'createdAt': (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      'cancelledAt': data['cancelledAt'],
+      'completedAt': data['completedAt'],
+      'totalPrice': (data['totalPrice'] as num?)?.toDouble() ?? 0.0,
+      'pickupTime': (data['pickupTime'] as Timestamp?)?.toDate(),
+      'pickupCode': data['pickupCode'] ?? '...',
+      'isReviewed': (data['isReviewed'] ?? false).toString(),
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _fetchDetails(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final d = snapshot.data!;
+        final items = d['orderItems'] as List<Map<String, dynamic>>;
+
+        return OrderCard(
+          storeImageUrl: d['storeImageUrl'] as String,
+          storeName: d['storeName'] as String,
+          orderId: d['orderId'] as String,
+          status: d['status'] as String,
+          itemCount: items.length,
+          totalPrice: d['totalPrice'] as double,
+          createdAt: d['createdAt'] as DateTime,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => OrderDetailsView(orderDetails: d),
+              ),
+            );
           },
-          transitionDuration: Duration.zero,
-          reverseTransitionDuration: Duration.zero,
-        ),
-      );
-      break;
+        );
+      },
+    );
   }
 }

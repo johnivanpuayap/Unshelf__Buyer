@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:unshelf_buyer/components/datetime_picker.dart';
+import 'package:unshelf_buyer/components/section_card.dart';
 import 'package:unshelf_buyer/views/order_placed_view.dart';
 import 'package:unshelf_buyer/viewmodels/order_viewmodel.dart';
 
@@ -252,7 +253,7 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 160),
         children: [
           // ── Pickup window ──────────────────────────────────────────────
-          _SectionCard(
+          SectionCard(
             child: ListTile(
               contentPadding: EdgeInsets.zero,
               leading: _IconCircle(icon: Icons.schedule_outlined, cs: cs),
@@ -277,7 +278,7 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
           const SizedBox(height: 12),
 
           // ── Payment method ─────────────────────────────────────────────
-          _SectionCard(
+          SectionCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -329,7 +330,7 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
 
           // ── Points redemption ──────────────────────────────────────────
           if (points > 0) ...[
-            _SectionCard(
+            SectionCard(
               child: ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: _IconCircle(icon: Icons.stars_outlined, cs: cs),
@@ -353,7 +354,7 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
           ],
 
           // ── Order summary ──────────────────────────────────────────────
-          _SectionCard(
+          SectionCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -525,36 +526,6 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
 }
 
 // ─── Helper widgets ───────────────────────────────────────────────────────────
-
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.child});
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 1,
-            spreadRadius: 1,
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 28,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
 
 class _IconCircle extends StatelessWidget {
   const _IconCircle({required this.icon, required this.cs});
