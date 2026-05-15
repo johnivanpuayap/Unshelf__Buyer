@@ -45,5 +45,21 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Unshelf Buyer needs camera access so you can take photos of products and your profile.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Unshelf Buyer needs access to your photo library so you can pick images for your profile and orders.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Unshelf Buyer needs permission to save images to your photo library.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Unshelf Buyer may use the microphone when recording product videos.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Unshelf Buyer uses your location to show nearby sellers and near-expired deals around you.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Unshelf Buyer uses your location to show nearby sellers and near-expired deals around you.</string>
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
+	<key>GMSApiKey</key>
+	<string>$(GMS_API_KEY)</string>
 </dict>
 </plist>
