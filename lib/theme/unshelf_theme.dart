@@ -175,17 +175,42 @@ abstract class UnshelfTheme {
       InputDecorationTheme(
         filled: true,
         fillColor: cs.surfaceContainerHighest,
+        isDense: false,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        hintStyle: TextStyle(
+          color: cs.onSurface.withValues(alpha: 0.45),
+          fontFamily: 'DM Sans',
+          fontWeight: FontWeight.w400,
+        ),
+        labelStyle: TextStyle(
+          color: cs.onSurface.withValues(alpha: 0.75),
+          fontFamily: 'DM Sans',
+          fontWeight: FontWeight.w500,
+        ),
+        floatingLabelStyle: TextStyle(
+          color: cs.primary,
+          fontFamily: 'DM Sans',
+          fontWeight: FontWeight.w600,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: cs.outline, width: 1.5),
+          borderSide: BorderSide(color: cs.outline.withValues(alpha: 0.6), width: 1.2),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: cs.outline, width: 1.5),
+          borderSide: BorderSide(color: cs.outline.withValues(alpha: 0.6), width: 1.2),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: cs.primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: cs.error.withValues(alpha: 0.7), width: 1.4),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: cs.error, width: 2),
         ),
       );
 
